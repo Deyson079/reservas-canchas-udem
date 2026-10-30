@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mis reservas · Reservas deportivas UdeM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="icon" href="assets/logo-udem.png">
+<script>window.UDEM_PORTAL = 'usuario';</script>
+<script src="assets/config.js"></script>
+<script src="assets/db.js"></script>
+<script src="assets/dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+<div class="demo">Versión de demostración · los datos se guardan solo en este navegador · los pagos son simulados</div>
+<header class="hdr"><div class="hdr-in">
+<sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a class="brand" href="index.html"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Reservas <span>Deportivas</span></b></a></sc-if><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><a class="brand" href="{{panelHref}}"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Portal del <span>personal</span></b></a></sc-if>
+<nav class="nav" aria-label="Principal"><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><sc-if value="{{showTes}}" hint-placeholder-val="{{ false }}"><a href="tesoreria.html" class="">Tesorería</a></sc-if><sc-if value="{{showBie}}" hint-placeholder-val="{{ false }}"><a href="bienestar.html" class="">Bienestar</a></sc-if><a href="personal.html" class="">Acceso del personal</a></sc-if><sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a href="reservar.html" class="">Reservar</a><a href="mis-reservas.html" class="on">Mis reservas<sc-if value="{{hayNoti}}" hint-placeholder-val="{{ false }}"><span class="noti-dot" aria-label="{{nNoti}} avisos nuevos">{{nNoti}}</span></sc-if></a><a href="escenarios.html" class="">Escenarios</a><a href="ayuda.html" class="">Ayuda</a></sc-if></nav>
+<sc-if value="{{guest}}" hint-placeholder-val="{{ true }}"><div class="me"><a class="btn-out btn-sm" href="registro.html">Crear cuenta</a><a class="btn btn-sm" href="ingresar.html">Ingresar</a></div></sc-if>
+<sc-if value="{{u.logged}}" hint-placeholder-val="{{ false }}"><div class="me"><a class="chipuser" href="{{perfilHref}}" title="Mi cuenta"><i style="background: {{u.color}}">{{u.ini}}</i>{{u.nombre}} · {{u.rol}}</a><button class="linkbtn" onClick="{{salir}}" style="font-size: 14px">Salir</button></div></sc-if>
+</div></header>
+<div style="flex: 1 0 auto">
+<main class="wrap">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 22px">
+<h1 class="h1" style="margin: 0">Mis reservas</h1>
+<a class="btn" href="reservar.html">+ Nueva reserva</a>
+</div>
+<sc-if value="{{hayAvisos}}" hint-placeholder-val="{{ false }}">
+<section class="card" style="margin-bottom: 20px; padding: 18px 22px" aria-label="Avisos">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px"><h2 style="font-size: 18px; margin: 0">Avisos <sc-if value="{{hayNoti}}" hint-placeholder-val="{{ false }}"><span class="noti-dot">{{nNoti}} nuevos</span></sc-if></h2><sc-if value="{{hayNoti}}" hint-placeholder-val="{{ false }}"><button class="linkbtn" onClick="{{leerTodo}}" style="font-size: 14px">Marcar todo como leído</button></sc-if></div>
+<sc-for list="{{avisos}}" as="a" hint-placeholder-count="3"><a href="{{a.href}}" style="{{a.style}}"><span style="{{a.dot}}"></span><span style="flex: 1 1 auto">{{a.msg}}</span><span style="font-size: 13px; color: #5A6470; white-space: nowrap">{{a.t}}</span></a></sc-for>
+</section>
+</sc-if>
+<sc-if value="{{pendientes}}" hint-placeholder-val="{{ false }}"><div class="alert a-warn" style="margin-bottom: 20px">Tienes {{pendientes}} reserva(s) pendiente(s) de pago. Págalas antes del plazo para no perder el horario.</div></sc-if>
+<div class="stickybar" role="region" aria-label="Filtro de reservas">
+<div class="sb-row" style="flex-wrap: wrap; justify-content: space-between">
+<div class="seg" role="tablist" aria-label="Filtrar reservas">
+<button role="tab" aria-pressed="{{isAct}}" aria-selected="{{isAct}}" onClick="{{showAct}}">Próximas ({{nAct}})</button>
+<button role="tab" aria-pressed="{{isHist}}" aria-selected="{{isHist}}" onClick="{{showHist}}">Historial ({{nHist}})</button>
+</div>
+<div class="viendo" style="font-size: 14px; color: #3A4652">Viendo: <b>{{viendo}}</b></div>
+<a class="btn btn-sm" href="reservar.html">+ Nueva reserva</a>
+</div>
+</div>
+<sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="text-align: center; padding: 44px 24px"><h2 class="h2">{{emptyTitle}}</h2><p class="lead" style="margin: 0 auto 20px">Cuando reserves una cancha la verás aquí con su estado.</p><a class="btn" href="reservar.html">Reservar una cancha</a></div>
+</sc-if>
+<div style="display: flex; flex-direction: column; gap: 14px">
+<sc-for list="{{items}}" as="r" hint-placeholder-count="2">
+<a href="{{r.href}}" style="display: flex; flex-wrap: wrap; align-items: center; gap: 18px; padding: 16px 20px 16px 16px; border-radius: 18px; color: #16222F; background: #FFFFFF; border: 1.5px solid #E1E4E6; text-decoration: none">
+<span style="{{r.box}}"><span style="font-size: 12px; font-weight: 700; text-transform: uppercase">{{r.mes}}</span><span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 38px; line-height: 1">{{r.dia}}</span></span>
+<span style="flex: 1 1 220px; display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 13px; color: #5A6470; font-weight: 600">{{r.code}}</span>
+<span style="font-size: 18px; font-weight: 700">{{r.cancha}}</span>
+<span style="font-size: 14px; color: #4A5560">{{r.fecha}} · {{r.hora}}</span>
+</span>
+<span style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px"><span class="chip {{r.cls}}">{{r.estado}}</span><span style="font-size: 14px; font-weight: 700">{{r.valor}}</span></span>
+<span aria-hidden="true" style="font-size: 22px; color: #C2262B">›</span>
+</a>
+</sc-for>
+</div>
+</main>
+</div>
+<footer class="ftr"><div class="ftr-in">
+<div><b>Bienestar Universitario · Deportes</b><br>{{contacto}}</div>
+<div><a href="ayuda.html">Ayuda y preguntas frecuentes</a><br><a href="reglamento.html">Reglamento de uso</a><br><a href="escenarios.html">Escenarios</a><br><a href="personal.html">Acceso del personal (Tesorería · Bienestar)</a></div>
+<div><b>Vigilada MinEducación</b><br>Universidad de Medellín</div>
+</div></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { tab: 'act' }; }
+  renderVals() {
+    const U = UdeM, cm = U.comun();
+    if (!U.exigirSesion('mis-reservas.html')) return cm;
+    if (cm.staff) { location.replace(cm.panelHref); return cm; }
+    const all = U.misReservas().map((r) => Object.assign({}, r, { ev: U.estadoVisible(r) }));
+    const act = all.filter((r) => ['confirmada', 'pendiente_pago', 'en_verificacion'].indexOf(r.ev) !== -1).sort((a, b) => (a.fecha + String(a.hora).padStart(2, '0')).localeCompare(b.fecha + String(b.hora).padStart(2, '0')));
+    const hist = all.filter((r) => act.indexOf(r) === -1);
+    const vis = this.state.tab === 'act' ? act : hist;
+    const MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    const on = 'min-height: 44px; padding: 0 18px; border: 0; border-radius: 9px; background: #FFFFFF; color: #932428; font-weight: 700; cursor: pointer; box-shadow: 0 2px 6px rgba(22,34,47,0.12)';
+    const off = 'min-height: 44px; padding: 0 18px; border: 0; border-radius: 9px; background: transparent; color: #4A5560; font-weight: 600; cursor: pointer';
+    const fmtT = (t) => new Date(t).toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const colores = { ok: '#1D5A51', err: '#C2262B', info: '#3A66AA' };
+    const avisos = U.notificaciones().slice(0, 6).map((n) => ({ msg: n.msg, t: fmtT(n.t), href: 'reserva.html?c=' + n.code,
+      style: 'display: flex; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #16222F; font-size: 15px; ' + (n.leida ? '' : 'background: #F3F6FA; font-weight: 600'),
+      dot: 'flex: 0 0 auto; width: 10px; height: 10px; border-radius: 50%; background: ' + (n.leida ? '#C9CED1' : colores[n.tipo] || '#3A66AA') }));
+    return Object.assign(cm, {
+      hayAvisos: avisos.length > 0, avisos, leerTodo: () => { U.marcarLeidas(); this.forceUpdate(); },
+      pendientes: act.filter((r) => r.estado === 'pendiente_pago').length,
+      isAct: this.state.tab === 'act', isHist: this.state.tab !== 'act', nAct: act.length, nHist: hist.length,
+      tabAct: this.state.tab === 'act' ? on : off, tabHist: this.state.tab === 'act' ? off : on,
+      showAct: () => this.setState({ tab: 'act' }), showHist: () => this.setState({ tab: 'hist' }),
+      viendo: (this.state.tab === 'act' ? 'reservas próximas' : 'historial') + ' · ' + vis.length + (vis.length === 1 ? ' reserva' : ' reservas'),
+      empty: vis.length === 0, emptyTitle: this.state.tab === 'act' ? 'No tienes reservas próximas' : 'Tu historial está vacío',
+      items: vis.map((r) => {
+        const p = r.fecha.split('-'), e = U.ESTADOS[r.ev];
+        return { href: 'reserva.html?c=' + r.code, code: r.code, cancha: U.cancha(r.cancha).nombre, fecha: U.diaCorto(r.fecha), hora: U.franja(r.hora), mes: MES[+p[1] - 1], dia: String(+p[2]), estado: e.txt, cls: e.cls, valor: r.valor ? U.dinero(r.valor) : 'Sin costo',
+          box: 'flex: 0 0 auto; width: 72px; height: 76px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; ' + (this.state.tab === 'act' ? 'background: #C2262B; color: #FFFFFF' : 'background: #ECEEEF; color: #4A5257') };
+      })
+    });
+  }
+}
+</script>
+</body>
+</html>

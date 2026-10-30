@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ingresar · Reservas deportivas UdeM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="icon" href="assets/logo-udem.png">
+<script>window.UDEM_PORTAL = 'usuario';</script>
+<script src="assets/config.js"></script>
+<script src="assets/db.js"></script>
+<script src="assets/dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+<div class="demo">Versión de demostración · los datos se guardan solo en este navegador · los pagos son simulados</div>
+<header class="hdr"><div class="hdr-in">
+<sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a class="brand" href="index.html"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Reservas <span>Deportivas</span></b></a></sc-if><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><a class="brand" href="{{panelHref}}"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Portal del <span>personal</span></b></a></sc-if>
+<nav class="nav" aria-label="Principal"><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><sc-if value="{{showTes}}" hint-placeholder-val="{{ false }}"><a href="tesoreria.html" class="">Tesorería</a></sc-if><sc-if value="{{showBie}}" hint-placeholder-val="{{ false }}"><a href="bienestar.html" class="">Bienestar</a></sc-if><a href="personal.html" class="">Acceso del personal</a></sc-if><sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a href="reservar.html" class="">Reservar</a><a href="mis-reservas.html" class="">Mis reservas<sc-if value="{{hayNoti}}" hint-placeholder-val="{{ false }}"><span class="noti-dot" aria-label="{{nNoti}} avisos nuevos">{{nNoti}}</span></sc-if></a><a href="escenarios.html" class="">Escenarios</a><a href="ayuda.html" class="">Ayuda</a></sc-if></nav>
+<sc-if value="{{guest}}" hint-placeholder-val="{{ true }}"><div class="me"><a class="btn-out btn-sm" href="registro.html">Crear cuenta</a><a class="btn btn-sm" href="ingresar.html">Ingresar</a></div></sc-if>
+<sc-if value="{{u.logged}}" hint-placeholder-val="{{ false }}"><div class="me"><a class="chipuser" href="{{perfilHref}}" title="Mi cuenta"><i style="background: {{u.color}}">{{u.ini}}</i>{{u.nombre}} · {{u.rol}}</a><button class="linkbtn" onClick="{{salir}}" style="font-size: 14px">Salir</button></div></sc-if>
+</div></header>
+<div style="flex: 1 0 auto">
+<main class="wrap" style="max-width: 1100px">
+<div style="display: flex; flex-wrap: wrap; background: #FFFFFF; border-radius: 24px; overflow: hidden; border: 1px solid #E1E4E6; box-shadow: 0 20px 50px rgba(22, 34, 47, 0.08)">
+<div style="flex: 1 1 380px; min-width: 0; background: #2B445F; color: #FFFFFF; padding: 40px; position: relative; overflow: hidden">
+<svg aria-hidden="true" width="520" height="520" viewBox="0 0 520 520" style="position: absolute; right: -180px; bottom: -160px" fill="none" stroke="#3A5878" stroke-width="5"><circle cx="260" cy="260" r="200"></circle><circle cx="260" cy="260" r="110"></circle><line x1="260" y1="20" x2="260" y2="500"></line><line x1="20" y1="260" x2="500" y2="260"></line></svg>
+<div style="display: inline-block; background: #FFFFFF; border-radius: 12px; padding: 10px 16px; position: relative"><img src="assets/logo-udem.png" alt="Universidad de Medellín" style="height: 48px; width: auto; display: block"></div>
+<h1 class="h1" style="margin: 30px 0 16px; position: relative">Tu correo<br>define tu<br>recorrido</h1>
+<div style="display: flex; flex-direction: column; gap: 12px; position: relative; max-width: 400px">
+<div style="background: #213650; border-radius: 14px; padding: 14px 16px"><div style="font-weight: 700; font-size: 15px">@udemedellin.edu.co · @soyudemedellin.edu.co</div><div style="font-size: 14px; line-height: 21px; color: #D6E0EA; margin-top: 4px">Comunidad UdeM: sin costo y confirmación inmediata.</div></div>
+<div style="background: #213650; border-radius: 14px; padding: 14px 16px"><div style="font-weight: 700; font-size: 15px">Cualquier otro correo</div><div style="font-size: 14px; line-height: 21px; color: #D6E0EA; margin-top: 4px">Usuario externo: factura y pago; se confirma al verificar el pago.</div></div>
+</div>
+</div>
+
+<div style="flex: 1 1 440px; min-width: 0; padding: 40px">
+<h2 style="font-size: 28px; margin: 0 0 6px">Ingresar</h2>
+<p style="font-size: 15px; color: #4A5560; margin: 0 0 24px">¿No tienes cuenta? <a href="{{registroHref}}" style="font-weight: 700">Créala aquí</a></p>
+<sc-if value="{{general}}" hint-placeholder-val="{{ false }}"><div class="alert a-err" role="alert" style="margin-bottom: 16px; flex-wrap: wrap"><span style="flex: 1 1 200px">{{general}}</span><sc-if value="{{noAccount}}" hint-placeholder-val="{{ false }}"><a class="btn btn-sm" href="{{registroHref}}">Crear cuenta con este correo</a></sc-if><sc-if value="{{esPersonal}}" hint-placeholder-val="{{ false }}"><a class="btn btn-sm" href="personal.html">Ir a Acceso del personal</a></sc-if></div></sc-if>
+<form onSubmit="{{submit}}" style="display: flex; flex-direction: column; gap: 18px" novalidate="">
+<div class="field {{eEmail}}"><label for="email">Correo electrónico</label><input id="email" type="email" autocomplete="username" value="{{email}}" onInput="{{onEmail}}" placeholder="nombre@udemedellin.edu.co"></div>
+<sc-if value="{{showBadge}}" hint-placeholder-val="{{ false }}"><span class="badge {{badgeCls}}" style="align-self: flex-start; margin-top: -8px">{{badge}}</span></sc-if>
+<div class="field {{eClave}}"><label for="clave">Contraseña</label><input id="clave" type="password" autocomplete="current-password"></div>
+<button class="btn" type="submit" style="min-height: 54px; font-size: 17px">Ingresar</button>
+<a href="recuperar.html" style="font-size: 15px; font-weight: 600; align-self: flex-start">Olvidé mi contraseña</a>
+</form>
+<div style="margin-top: 24px; font-size: 14px; color: #4A5560">¿Eres de Tesorería o Bienestar? <a href="personal.html" style="font-weight: 700">Acceso del personal</a></div>
+</div>
+</div>
+</main>
+</div>
+<footer class="ftr"><div class="ftr-in">
+<div><b>Bienestar Universitario · Deportes</b><br>{{contacto}}</div>
+<div><a href="ayuda.html">Ayuda y preguntas frecuentes</a><br><a href="reglamento.html">Reglamento de uso</a><br><a href="escenarios.html">Escenarios</a><br><a href="personal.html">Acceso del personal (Tesorería · Bienestar)</a></div>
+<div><b>Vigilada MinEducación</b><br>Universidad de Medellín</div>
+</div></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { email: UdeM.q('email') || '', err: {}, noAccount: false, esPersonal: false }; }
+  next(u) { const n = UdeM.q('next'); return n && !/^(tesoreria|bienestar|panel|personal)\.html/.test(n) && n.indexOf('vista=') === -1 ? n : 'reservar.html'; }
+  renderVals() {
+    const U = UdeM, cm = U.comun(), st = this.state, em = st.email.trim();
+    const valid = U.EMAIL_RE.test(em), inst = valid && U.esInstitucional(em);
+    const err = st.err;
+    return Object.assign(cm, {
+      email: st.email, eEmail: err.email ? 'err' : '', eClave: err.clave ? 'err' : '',
+      general: err.email || err.clave || '', noAccount: st.noAccount, esPersonal: st.esPersonal,
+      showBadge: valid, badge: inst ? '✓ Comunidad UdeM · sin costo' : 'Usuario externo · con pago', badgeCls: inst ? 'b-inst' : 'b-ext',
+      registroHref: 'registro.html' + (em ? '?email=' + encodeURIComponent(em) : '') + (U.q('next') ? (em ? '&' : '?') + 'next=' + encodeURIComponent(U.q('next')) : ''),
+            onEmail: (e) => this.setState({ email: e.target.value, err: {}, noAccount: false, esPersonal: false }),
+      submit: (e) => {
+        e.preventDefault();
+        const r = U.ingresar(document.getElementById('email').value, document.getElementById('clave').value, 'usuario');
+        if (!r.ok) { this.setState({ email: document.getElementById('email').value, err: r.err, noAccount: !!r.noAccount, esPersonal: !!r.esPersonal }); return; }
+        U.ir(this.next(r.user));
+      }
+    });
+  }
+}
+</script>
+</body>
+</html>

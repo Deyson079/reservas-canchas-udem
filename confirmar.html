@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Confirmar reserva · Reservas deportivas UdeM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="icon" href="assets/logo-udem.png">
+<script>window.UDEM_PORTAL = 'usuario';</script>
+<script src="assets/config.js"></script>
+<script src="assets/db.js"></script>
+<script src="assets/dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+<div class="demo">Versión de demostración · los datos se guardan solo en este navegador · los pagos son simulados</div>
+<header class="hdr"><div class="hdr-in">
+<sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a class="brand" href="index.html"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Reservas <span>Deportivas</span></b></a></sc-if><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><a class="brand" href="{{panelHref}}"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Portal del <span>personal</span></b></a></sc-if>
+<nav class="nav" aria-label="Principal"><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><sc-if value="{{showTes}}" hint-placeholder-val="{{ false }}"><a href="tesoreria.html" class="">Tesorería</a></sc-if><sc-if value="{{showBie}}" hint-placeholder-val="{{ false }}"><a href="bienestar.html" class="">Bienestar</a></sc-if><a href="personal.html" class="">Acceso del personal</a></sc-if><sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a href="reservar.html" class="on">Reservar</a><a href="mis-reservas.html" class="">Mis reservas<sc-if value="{{hayNoti}}" hint-placeholder-val="{{ false }}"><span class="noti-dot" aria-label="{{nNoti}} avisos nuevos">{{nNoti}}</span></sc-if></a><a href="escenarios.html" class="">Escenarios</a><a href="ayuda.html" class="">Ayuda</a></sc-if></nav>
+<sc-if value="{{guest}}" hint-placeholder-val="{{ true }}"><div class="me"><a class="btn-out btn-sm" href="registro.html">Crear cuenta</a><a class="btn btn-sm" href="ingresar.html">Ingresar</a></div></sc-if>
+<sc-if value="{{u.logged}}" hint-placeholder-val="{{ false }}"><div class="me"><a class="chipuser" href="{{perfilHref}}" title="Mi cuenta"><i style="background: {{u.color}}">{{u.ini}}</i>{{u.nombre}} · {{u.rol}}</a><button class="linkbtn" onClick="{{salir}}" style="font-size: 14px">Salir</button></div></sc-if>
+</div></header>
+<div style="flex: 1 0 auto">
+<main class="wrap" style="max-width: 1080px">
+<sc-if value="{{missing}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="text-align: center; padding: 48px 24px"><h1 class="h2">No hay una reserva en curso</h1><p class="lead" style="margin: 0 auto 22px">Elige un horario y completa los datos.</p><a class="btn" href="reservar.html">Hacer una reserva</a></div>
+</sc-if>
+<sc-if value="{{ready}}" hint-placeholder-val="{{ true }}">
+<ol class="steps" aria-label="Pasos de la reserva"><li class="done"><span>✓</span><a href="reservar.html" style="color: inherit; text-decoration: none">Cancha y horario</a></li><li class="done"><span>✓</span><a href="datos.html" style="color: inherit; text-decoration: none">Datos</a></li><li class="now"><span>3</span>Confirmar</li></ol>
+<h1 class="h1" style="font-size: 50px; margin-bottom: 22px">Revisa antes de confirmar</h1>
+
+<sc-if value="{{conflict}}" hint-placeholder-val="{{ false }}">
+<div class="alert a-warn" role="alert" style="flex-direction: column; margin-bottom: 20px">
+<b>Alguien reservó este horario hace un momento.</b><span>Tus datos se conservan; elige otra franja:</span>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px">
+<sc-for list="{{alts}}" as="a" hint-placeholder-count="3"><button onClick="{{a.pick}}" class="chip c-ok" style="cursor: pointer; min-height: 44px; font-size: 14px">✓ {{a.label}}</button></sc-for>
+<a href="reservar.html" class="chip c-res" style="text-decoration: none; min-height: 44px">Ver todos los horarios</a>
+</div>
+</div>
+</sc-if>
+
+<div style="background: #FFFFFF; border-radius: 20px; border: 1px solid #E1E4E6; overflow: hidden">
+<div style="display: flex; flex-wrap: wrap">
+<div style="flex: 1 1 280px; background: #C2262B; color: #FFFFFF; padding: 28px; position: relative; overflow: hidden">
+<svg aria-hidden="true" width="300" height="200" viewBox="0 0 300 200" style="position: absolute; right: -60px; bottom: -40px" fill="none" stroke="#A81F24" stroke-width="5"><rect x="10" y="10" width="280" height="180"></rect><line x1="150" y1="10" x2="150" y2="190"></line><circle cx="150" cy="100" r="40"></circle></svg>
+<div style="font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; position: relative">{{fecha}}</div>
+<div style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 56px; line-height: 1; margin: 8px 0; position: relative">{{horaIni}}</div>
+<div style="font-size: 16px; font-weight: 600; position: relative">{{hora}} · 1 hora</div>
+</div>
+<dl style="flex: 2 1 400px; margin: 0; padding: 28px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px 28px; font-size: 15px">
+<div><dt style="color: #5A6470; font-size: 13px; font-weight: 600">Cancha</dt><dd style="margin: 4px 0 0; font-weight: 700">{{courtName}}</dd></div>
+<div><dt style="color: #5A6470; font-size: 13px; font-weight: 600">Actividad</dt><dd style="margin: 4px 0 0; font-weight: 700">{{actividad}}</dd></div>
+<div><dt style="color: #5A6470; font-size: 13px; font-weight: 600">A nombre de</dt><dd style="margin: 4px 0 0; font-weight: 700">{{titular}}</dd></div>
+<div><dt style="color: #5A6470; font-size: 13px; font-weight: 600">Valor</dt><dd style="margin: 4px 0 0; font-weight: 700">{{valor}}</dd></div>
+<sc-if value="{{obs}}" hint-placeholder-val="{{ false }}"><div><dt style="color: #5A6470; font-size: 13px; font-weight: 600">Observaciones</dt><dd style="margin: 4px 0 0; font-weight: 700">{{obs}}</dd></div></sc-if>
+</dl>
+</div>
+<div style="border-top: 1px solid #E1E4E6; padding: 16px 28px; display: flex; flex-wrap: wrap; gap: 18px; font-size: 15px; font-weight: 600"><a href="reservar.html">Cambiar cancha u horario</a><a href="datos.html">Editar datos</a></div>
+</div>
+
+<div class="card" style="margin-top: 20px; display: flex; flex-direction: column; gap: 14px">
+<div style="font-size: 15px; line-height: 23px; color: #2E3A46"><b>Qué pasa después:</b> {{despues}}</div>
+<label style="display: flex; gap: 12px; align-items: center; font-size: 15px; min-height: 44px"><input id="acepto" type="checkbox" checked="{{acepto}}" onChange="{{toggle}}" style="width: 22px; height: 22px; accent-color: #C2262B">Acepto las condiciones de uso de los escenarios (<a href="reglamento.html" target="_blank">ver reglamento</a>)</label>
+<sc-if value="{{needAcepto}}" hint-placeholder-val="{{ false }}"><span class="errtxt">✕ Debes aceptar el reglamento para continuar.</span></sc-if>
+</div>
+<div style="margin-top: 22px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 14px">
+<a class="btn-out" href="datos.html">← Atrás</a>
+<sc-if value="{{idle}}" hint-placeholder-val="{{ true }}"><button class="btn" onClick="{{send}}" style="min-height: 56px; font-size: 18px; padding: 0 32px">{{cta}}</button></sc-if>
+<sc-if value="{{sending}}" hint-placeholder-val="{{ false }}"><button class="btn" disabled="{{ true }}" aria-busy="true" style="min-height: 56px; font-size: 17px">Procesando…</button></sc-if>
+</div>
+</sc-if>
+</main>
+</div>
+<footer class="ftr"><div class="ftr-in">
+<div><b>Bienestar Universitario · Deportes</b><br>{{contacto}}</div>
+<div><a href="ayuda.html">Ayuda y preguntas frecuentes</a><br><a href="reglamento.html">Reglamento de uso</a><br><a href="escenarios.html">Escenarios</a><br><a href="personal.html">Acceso del personal (Tesorería · Bienestar)</a></div>
+<div><b>Vigilada MinEducación</b><br>Universidad de Medellín</div>
+</div></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { acepto: false, needAcepto: false, conflict: false, sending: false }; }
+  renderVals() {
+    const U = UdeM, cm = U.comun();
+    if (!U.exigirSesion('confirmar.html')) return cm;
+    if (cm.staff) { location.replace('reservar.html'); return cm; }
+    const me = U.usuarioActual(), s = U.sel(), st = this.state, ext = me.tipo === 'externo';
+    let d = {}; try { d = JSON.parse(sessionStorage.getItem('udem_datos')) || {}; } catch (e) {}
+    const missing = s.hora === null || s.hora === undefined || !d.actividad || (ext && !(me.facturacion && me.facturacion.rut));
+    const c = U.cancha(s.cancha || 'A');
+    const alts = st.conflict ? U.alternativas(s.cancha, s.fecha, 3).map((a) => ({ label: U.cancha(a.cancha).corto + ' · ' + U.diaCorto(a.fecha) + ' · ' + U.hora(a.hora), pick: () => { U.sel({ cancha: a.cancha, fecha: a.fecha, hora: a.hora }); this.setState({ conflict: false }); } })) : [];
+    return Object.assign(cm, {
+      missing, ready: !missing, conflict: st.conflict, alts, idle: !st.sending, sending: st.sending,
+      courtName: c.nombre, fecha: missing ? '' : U.diaLargo(s.fecha), hora: missing ? '' : U.franja(s.hora), horaIni: missing ? '' : U.hora(s.hora).replace(' p. m.', ' PM').replace(' a. m.', ' AM'),
+      actividad: (d.actividad || '') + ' · ' + (d.participantes || '') + ' personas', obs: d.observaciones || '',
+      titular: ext ? me.facturacion.razon + ' (externo)' : me.nombre + ' · Comunidad UdeM',
+      valor: ext ? U.dinero(U.CFG.tarifaExternosHora) : 'Sin costo',
+      despues: ext ? 'se genera tu factura, el horario queda apartado ' + U.CFG.horasParaPagar + ' horas y la reserva se confirma cuando se aprueba tu pago (en línea) o Tesorería verifica tu comprobante.' : 'tu reserva queda confirmada de inmediato. No tienes que pagar nada.',
+      cta: ext ? 'Confirmar y generar factura' : 'Confirmar reserva',
+      acepto: st.acepto, needAcepto: st.needAcepto, toggle: (e) => this.setState({ acepto: e.target.checked, needAcepto: false }),
+      send: () => {
+        if (!st.acepto) { this.setState({ needAcepto: true }); return; }
+        this.setState({ sending: true });
+        setTimeout(() => {
+          const r = U.crearReserva(s, d);
+          if (!r.ok) { this.setState({ sending: false, conflict: !!r.conflicto }); if (!r.conflicto) alert(r.error); return; }
+          try { sessionStorage.removeItem('udem_datos'); } catch (e) {}
+          U.sel({ cancha: s.cancha, fecha: s.fecha, hora: null });
+          location.replace('reserva.html?c=' + r.reserva.code + '&nueva=1');
+        }, 700);
+      }
+    });
+  }
+}
+</script>
+</body>
+</html>

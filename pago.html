@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pago en línea · Reservas deportivas UdeM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="icon" href="assets/logo-udem.png">
+<script>window.UDEM_PORTAL = 'usuario';</script>
+<script src="assets/config.js"></script>
+<script src="assets/db.js"></script>
+<script src="assets/dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+<div class="demo">Versión de demostración · los datos se guardan solo en este navegador · los pagos son simulados</div>
+<header class="hdr"><div class="hdr-in">
+<sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a class="brand" href="index.html"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Reservas <span>Deportivas</span></b></a></sc-if><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><a class="brand" href="{{panelHref}}"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Portal del <span>personal</span></b></a></sc-if>
+<nav class="nav" aria-label="Principal"><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><sc-if value="{{showTes}}" hint-placeholder-val="{{ false }}"><a href="tesoreria.html" class="">Tesorería</a></sc-if><sc-if value="{{showBie}}" hint-placeholder-val="{{ false }}"><a href="bienestar.html" class="">Bienestar</a></sc-if><a href="personal.html" class="">Acceso del personal</a></sc-if><sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a href="reservar.html" class="">Reservar</a><a href="mis-reservas.html" class="on">Mis reservas<sc-if value="{{hayNoti}}" hint-placeholder-val="{{ false }}"><span class="noti-dot" aria-label="{{nNoti}} avisos nuevos">{{nNoti}}</span></sc-if></a><a href="escenarios.html" class="">Escenarios</a><a href="ayuda.html" class="">Ayuda</a></sc-if></nav>
+<sc-if value="{{guest}}" hint-placeholder-val="{{ true }}"><div class="me"><a class="btn-out btn-sm" href="registro.html">Crear cuenta</a><a class="btn btn-sm" href="ingresar.html">Ingresar</a></div></sc-if>
+<sc-if value="{{u.logged}}" hint-placeholder-val="{{ false }}"><div class="me"><a class="chipuser" href="{{perfilHref}}" title="Mi cuenta"><i style="background: {{u.color}}">{{u.ini}}</i>{{u.nombre}} · {{u.rol}}</a><button class="linkbtn" onClick="{{salir}}" style="font-size: 14px">Salir</button></div></sc-if>
+</div></header>
+<div style="flex: 1 0 auto">
+<main class="wrap" style="max-width: 760px">
+<a href="{{backHref}}" style="display: inline-flex; align-items: center; font-weight: 600; text-decoration: none; margin-bottom: 16px; min-height: 44px">← Volver a la reserva</a>
+<sc-if value="{{invalid}}" hint-placeholder-val="{{ false }}"><div class="card" style="text-align: center; padding: 44px 24px"><h1 class="h2">Esta reserva no tiene pagos pendientes</h1><a class="btn" href="{{backHref}}">Ver la reserva</a></div></sc-if>
+<sc-if value="{{ok}}" hint-placeholder-val="{{ true }}">
+<div class="alert a-warn" style="margin-bottom: 18px"><div><b>Pasarela simulada.</b> No se realiza ningún cobro ni se piden datos bancarios. Para cobrar de verdad se conecta una pasarela (por ejemplo Wompi, PayU o Mercado Pago) con la cuenta de comercio de la universidad.</div></div>
+<div class="card" style="padding: 0; overflow: hidden">
+<div style="background: #16222F; color: #FFFFFF; padding: 22px 26px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: center">
+<div><div style="font-size: 13px; color: #B9C3CC; font-weight: 600; text-transform: uppercase; letter-spacing: 1px">Factura {{r.factura.numero}} · {{r.code}}</div><div style="font-size: 16px; margin-top: 4px">{{concepto}}</div></div>
+<div style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 40px">{{valor}}</div>
+</div>
+<div style="padding: 24px 26px; display: flex; flex-direction: column; gap: 14px">
+<sc-if value="{{step1}}" hint-placeholder-val="{{ true }}">
+<div class="eyebrow">Elige el medio de pago</div>
+<sc-for list="{{metodos}}" as="m" hint-placeholder-count="2">
+<button onClick="{{m.pick}}" class="radio-card {{m.cls}}" aria-pressed="{{m.on}}" style="text-align: left; width: 100%">
+<span style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid #2B445F; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; margin-top: 2px"><span style="width: 10px; height: 10px; border-radius: 50%; background: {{m.dot}}"></span></span>
+<span><b style="font-size: 16px">{{m.t}}</b><br><span style="font-size: 14px; color: #4A5560">{{m.d}}</span></span>
+</button>
+</sc-for>
+<div class="alert a-info" style="font-size: 14px">Después de pagar, Tesorería valida el pago y la reserva queda confirmada. Verás el cambio en tu reserva y en tus avisos.</div>
+<button class="btn" onClick="{{pay}}" style="min-height: 54px; font-size: 17px">Pagar {{valor}} (simulado)</button>
+<button class="linkbtn" onClick="{{fail}}" style="align-self: center; font-size: 14px; color: #5A6470">Simular un pago rechazado</button>
+</sc-if>
+<sc-if value="{{processing}}" hint-placeholder-val="{{ false }}"><div style="text-align: center; padding: 30px 0; font-size: 17px; font-weight: 700">Procesando el pago con {{metodoTxt}}…</div></sc-if>
+<sc-if value="{{rejected}}" hint-placeholder-val="{{ false }}">
+<div class="alert a-err" role="alert"><div><b>El pago fue rechazado (simulación).</b> No se hizo ningún cargo. Intenta de nuevo u otro medio, o sube tu comprobante si pagaste por transferencia.</div></div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px"><button class="btn" onClick="{{retry}}">Intentar de nuevo</button><a class="btn-out" href="{{backHref}}">Subir comprobante</a></div>
+</sc-if>
+</div>
+</div>
+</sc-if>
+</main>
+</div>
+<footer class="ftr"><div class="ftr-in">
+<div><b>Bienestar Universitario · Deportes</b><br>{{contacto}}</div>
+<div><a href="ayuda.html">Ayuda y preguntas frecuentes</a><br><a href="reglamento.html">Reglamento de uso</a><br><a href="escenarios.html">Escenarios</a><br><a href="personal.html">Acceso del personal (Tesorería · Bienestar)</a></div>
+<div><b>Vigilada MinEducación</b><br>Universidad de Medellín</div>
+</div></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { metodo: 'PSE', fase: 'elegir' }; }
+  renderVals() {
+    const U = UdeM, cm = U.comun();
+    if (!U.exigirSesion()) return cm;
+    const me = U.usuarioActual(), r = U.reserva(U.q('c')), st = this.state;
+    const backHref = 'reserva.html?c=' + (r ? r.code : '');
+    if (!r || r.userId !== me.id || r.estado !== 'pendiente_pago') return Object.assign(cm, { invalid: true, ok: false, backHref });
+    const ms = [{ k: 'PSE', t: 'PSE · débito a cuenta', d: 'Serías redirigido al banco (simulado).' }, { k: 'Tarjeta', t: 'Tarjeta de crédito o débito', d: 'Se capturaría en la página segura de la pasarela (simulado).' }];
+    return Object.assign(cm, {
+      invalid: false, ok: true, r, backHref, valor: U.dinero(r.valor),
+      concepto: U.cancha(r.cancha).nombre + ' · ' + U.diaCorto(r.fecha) + ' · ' + U.franja(r.hora),
+      step1: st.fase === 'elegir', processing: st.fase === 'procesando', rejected: st.fase === 'rechazado', metodoTxt: st.metodo,
+      metodos: ms.map((m) => ({ t: m.t, d: m.d, on: st.metodo === m.k, cls: st.metodo === m.k ? 'on' : '', dot: st.metodo === m.k ? '#2B445F' : 'transparent', pick: () => this.setState({ metodo: m.k }) })),
+      pay: () => { this.setState({ fase: 'procesando' }); setTimeout(() => { U.pagarEnLinea(r.code, st.metodo); location.replace('reserva.html?c=' + r.code + '&pagado=1'); }, 1200); },
+      fail: () => { this.setState({ fase: 'procesando' }); setTimeout(() => this.setState({ fase: 'rechazado' }), 1000); },
+      retry: () => this.setState({ fase: 'elegir' })
+    });
+  }
+}
+</script>
+</body>
+</html>

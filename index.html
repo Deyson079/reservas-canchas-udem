@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inicio · Reservas deportivas UdeM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="icon" href="assets/logo-udem.png">
+<script>window.UDEM_PORTAL = 'usuario';</script>
+<script src="assets/config.js"></script>
+<script src="assets/db.js"></script>
+<script src="assets/dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+<div class="demo">Versión de demostración · los datos se guardan solo en este navegador · los pagos son simulados</div>
+<header class="hdr"><div class="hdr-in">
+<sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a class="brand" href="index.html"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Reservas <span>Deportivas</span></b></a></sc-if><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><a class="brand" href="{{panelHref}}"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Portal del <span>personal</span></b></a></sc-if>
+<nav class="nav" aria-label="Principal"><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><sc-if value="{{showTes}}" hint-placeholder-val="{{ false }}"><a href="tesoreria.html" class="">Tesorería</a></sc-if><sc-if value="{{showBie}}" hint-placeholder-val="{{ false }}"><a href="bienestar.html" class="">Bienestar</a></sc-if><a href="personal.html" class="">Acceso del personal</a></sc-if><sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a href="reservar.html" class="">Reservar</a><a href="mis-reservas.html" class="">Mis reservas<sc-if value="{{hayNoti}}" hint-placeholder-val="{{ false }}"><span class="noti-dot" aria-label="{{nNoti}} avisos nuevos">{{nNoti}}</span></sc-if></a><a href="escenarios.html" class="">Escenarios</a><a href="ayuda.html" class="">Ayuda</a></sc-if></nav>
+<sc-if value="{{guest}}" hint-placeholder-val="{{ true }}"><div class="me"><a class="btn-out btn-sm" href="registro.html">Crear cuenta</a><a class="btn btn-sm" href="ingresar.html">Ingresar</a></div></sc-if>
+<sc-if value="{{u.logged}}" hint-placeholder-val="{{ false }}"><div class="me"><a class="chipuser" href="{{perfilHref}}" title="Mi cuenta"><i style="background: {{u.color}}">{{u.ini}}</i>{{u.nombre}} · {{u.rol}}</a><button class="linkbtn" onClick="{{salir}}" style="font-size: 14px">Salir</button></div></sc-if>
+</div></header>
+<div style="flex: 1 0 auto">
+<section style="background: #C2262B; color: #FFFFFF; position: relative; overflow: hidden">
+<svg aria-hidden="true" width="900" height="560" viewBox="0 0 900 560" style="position: absolute; right: -120px; top: -20px" fill="none" stroke="#A81F24" stroke-width="6"><rect x="40" y="40" width="820" height="480" rx="4"></rect><line x1="450" y1="40" x2="450" y2="520"></line><circle cx="450" cy="280" r="90"></circle><circle cx="450" cy="280" r="8" fill="#A81F24"></circle><path d="M40 160 h120 v240 h-120"></path><path d="M860 160 h-120 v240 h120"></path><path d="M160 200 a80 80 0 0 1 0 160"></path><path d="M740 200 a80 80 0 0 0 0 160"></path></svg>
+<div style="max-width: 1280px; margin: 0 auto; padding: 72px 32px 80px; display: flex; flex-wrap: wrap; gap: 48px; align-items: center; position: relative">
+<div style="flex: 1 1 480px; min-width: 0">
+<div style="display: inline-flex; background: #932428; padding: 8px 14px; border-radius: 999px; font-size: 13px; font-weight: 600">Bienestar Universitario · Deportes</div>
+<h1 style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(52px, 7vw, 86px); line-height: 0.92; text-transform: uppercase; margin: 22px 0 18px">Tu cancha,<br>reservada en<br><span style="color: #F3D941">tres pasos.</span></h1>
+<p style="font-size: 18px; line-height: 29px; max-width: 540px; margin: 0 0 30px">Consulta qué canchas están libres, elige tu horario y recibe la respuesta en pantalla. Sin enviar correos ni esperar días por una confirmación.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 14px">
+<a href="{{cta1Href}}" style="background: #FFFFFF; color: #932428; text-decoration: none; font-weight: 700; font-size: 17px; padding: 16px 28px; border-radius: 12px">{{cta1}} →</a>
+<a href="{{cta2Href}}" style="color: #FFFFFF; text-decoration: none; font-weight: 700; font-size: 17px; padding: 14px 26px; border-radius: 12px; border: 2px solid #FFFFFF">{{cta2}}</a>
+</div>
+</div>
+<div style="flex: 1 1 400px; min-width: 0; max-width: 500px; background: #FFFFFF; color: #16222F; border-radius: 20px; padding: 26px; box-shadow: 0 30px 60px rgba(60, 10, 12, 0.35)">
+<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 18px">
+<div style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 26px; text-transform: uppercase">{{hoyTitulo}}</div>
+<div style="font-size: 13px; color: #5A6470">{{hoyFecha}}</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 12px">
+<sc-for list="{{today}}" as="c" hint-placeholder-count="3">
+<div style="border: 1px solid #E1E4E6; border-radius: 14px; padding: 14px 16px">
+<div style="font-weight: 700; font-size: 15px; margin-bottom: 10px">{{c.nombre}}</div>
+<sc-if value="{{c.fuera}}" hint-placeholder-val="{{ false }}"><span class="chip c-off">⊘ Fuera de servicio</span></sc-if>
+<sc-if value="{{c.sinCupo}}" hint-placeholder-val="{{ false }}"><span class="chip c-res">Sin franjas libres</span></sc-if>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{c.slots}}" as="s" hint-placeholder-count="3"><a href="{{s.href}}" class="chip c-ok" style="text-decoration: none" title="Reservar esta franja">✓ {{s.label}}</a></sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+<a href="reservar.html" style="margin-top: 16px; display: inline-block; font-weight: 700; font-size: 15px">Ver todos los horarios →</a>
+</div>
+</div>
+</section>
+
+<section style="max-width: 1280px; margin: 0 auto; padding: 64px 32px 24px">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px">
+<div class="card" style="border-top: 6px solid #2B445F">
+<span class="badge b-inst">Comunidad UdeM · sin costo</span>
+<h2 class="h2" style="margin-top: 14px">¿Eres estudiante, docente o empleado?</h2>
+<p style="font-size: 15px; line-height: 24px; color: #4A5560; margin: 0 0 18px">Crea tu cuenta con tu correo <b>@udemedellin.edu.co</b> o <b>@soyudemedellin.edu.co</b>. La plataforma te reconoce por el correo: no pagas nada y tu reserva queda confirmada al instante.</p>
+<a class="btn-out btn-sm" href="registro.html">Crear cuenta institucional</a>
+</div>
+<div class="card" style="border-top: 6px solid #C2262B">
+<span class="badge b-ext">Usuarios externos · con pago</span>
+<h2 class="h2" style="margin-top: 14px">¿Eres persona o empresa externa?</h2>
+<p style="font-size: 15px; line-height: 24px; color: #4A5560; margin: 0 0 18px">Crea tu cuenta con cualquier otro correo y tus datos de facturación. Al reservar se genera tu factura de {{tarifa}} por hora; pagas en línea o subes el comprobante y Tesorería lo verifica.</p>
+<a class="btn-out btn-sm" href="registro.html">Crear cuenta de externo</a>
+</div>
+</div>
+</section>
+
+
+
+<section id="escenarios" style="max-width: 1280px; margin: 0 auto; padding: 48px 32px 80px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 24px">
+<h2 class="h1" style="font-size: 48px; margin: 0">Escenarios</h2>
+<a href="escenarios.html" style="font-weight: 700">Ver detalles →</a>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 22px">
+<sc-for list="{{courts}}" as="c" hint-placeholder-count="3">
+<a href="{{c.href}}" style="text-decoration: none; color: #16222F; background: #FFFFFF; border-radius: 18px; overflow: hidden; border: 1px solid #E1E4E6; display: block">
+<div style="height: 150px; background: {{c.color}}; position: relative; overflow: hidden">
+<svg aria-hidden="true" width="100%" height="150" viewBox="0 0 400 150" preserveAspectRatio="xMidYMid slice" fill="none" stroke="{{c.linea}}" stroke-width="3"><rect x="30" y="16" width="340" height="118"></rect><line x1="200" y1="16" x2="200" y2="134"></line><circle cx="200" cy="75" r="28"></circle><path d="M30 48 h50 v54 h-50"></path><path d="M370 48 h-50 v54 h50"></path></svg>
+<span class="chip {{c.chipClass}}" style="position: absolute; left: 16px; top: 16px">{{c.chip}}</span>
+</div>
+<div style="padding: 18px 22px 22px"><div style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 26px; text-transform: uppercase">{{c.nombre}}</div><div style="font-size: 14px; color: #4A5560; margin-top: 6px">{{c.deportes}}</div></div>
+</a>
+</sc-for>
+</div>
+</section>
+</div>
+<footer class="ftr"><div class="ftr-in">
+<div><b>Bienestar Universitario · Deportes</b><br>{{contacto}}</div>
+<div><a href="ayuda.html">Ayuda y preguntas frecuentes</a><br><a href="reglamento.html">Reglamento de uso</a><br><a href="escenarios.html">Escenarios</a><br><a href="personal.html">Acceso del personal (Tesorería · Bienestar)</a></div>
+<div><b>Vigilada MinEducación</b><br>Universidad de Medellín</div>
+</div></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const U = UdeM, cm = U.comun(), d0 = U.dias()[0], uid = cm.u.logged ? U.usuarioActual().id : null;
+    const today = U.canchas().map((c) => {
+      const fuera = !!U.fueraDeServicio(c.id);
+      const slots = fuera ? [] : U.horas().filter((h) => U.estadoFranja(c.id, d0.iso, h, uid) === 'libre').slice(0, 3)
+        .map((h) => ({ label: U.hora(h), href: 'reservar.html?cancha=' + c.id + '&fecha=' + d0.iso + '&hora=' + h }));
+      return { nombre: c.nombre, fuera, sinCupo: !fuera && slots.length === 0, slots };
+    });
+    const courts = U.canchas().map((c) => {
+      const fuera = U.fueraDeServicio(c.id), n = U.libres(c.id, d0.iso);
+      return Object.assign({}, c, { href: 'reservar.html?cancha=' + c.id, chip: fuera ? '⊘ Fuera de servicio' : '✓ ' + n + ' franjas libres hoy', chipClass: fuera ? 'c-off' : 'c-ok' });
+    });
+    return Object.assign(cm, {
+      today, courts, hoyTitulo: 'Hoy en los escenarios', hoyFecha: d0.corto, tarifa: U.dinero(U.CFG.tarifaExternosHora), 
+      cta1: cm.guest ? 'Crear mi cuenta' : 'Reservar una cancha', cta1Href: cm.guest ? 'registro.html' : 'reservar.html',
+      cta2: cm.guest ? 'Ya tengo cuenta' : 'Mis reservas', cta2Href: cm.guest ? 'ingresar.html' : 'mis-reservas.html'
+    });
+  }
+}
+</script>
+</body>
+</html>

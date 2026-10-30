@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Datos de la reserva · Reservas deportivas UdeM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="icon" href="assets/logo-udem.png">
+<script>window.UDEM_PORTAL = 'usuario';</script>
+<script src="assets/config.js"></script>
+<script src="assets/db.js"></script>
+<script src="assets/dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+<div class="demo">Versión de demostración · los datos se guardan solo en este navegador · los pagos son simulados</div>
+<header class="hdr"><div class="hdr-in">
+<sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a class="brand" href="index.html"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Reservas <span>Deportivas</span></b></a></sc-if><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><a class="brand" href="{{panelHref}}"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Portal del <span>personal</span></b></a></sc-if>
+<nav class="nav" aria-label="Principal"><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><sc-if value="{{showTes}}" hint-placeholder-val="{{ false }}"><a href="tesoreria.html" class="">Tesorería</a></sc-if><sc-if value="{{showBie}}" hint-placeholder-val="{{ false }}"><a href="bienestar.html" class="">Bienestar</a></sc-if><a href="personal.html" class="">Acceso del personal</a></sc-if><sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a href="reservar.html" class="on">Reservar</a><a href="mis-reservas.html" class="">Mis reservas<sc-if value="{{hayNoti}}" hint-placeholder-val="{{ false }}"><span class="noti-dot" aria-label="{{nNoti}} avisos nuevos">{{nNoti}}</span></sc-if></a><a href="escenarios.html" class="">Escenarios</a><a href="ayuda.html" class="">Ayuda</a></sc-if></nav>
+<sc-if value="{{guest}}" hint-placeholder-val="{{ true }}"><div class="me"><a class="btn-out btn-sm" href="registro.html">Crear cuenta</a><a class="btn btn-sm" href="ingresar.html">Ingresar</a></div></sc-if>
+<sc-if value="{{u.logged}}" hint-placeholder-val="{{ false }}"><div class="me"><a class="chipuser" href="{{perfilHref}}" title="Mi cuenta"><i style="background: {{u.color}}">{{u.ini}}</i>{{u.nombre}} · {{u.rol}}</a><button class="linkbtn" onClick="{{salir}}" style="font-size: 14px">Salir</button></div></sc-if>
+</div></header>
+<div style="flex: 1 0 auto">
+<main class="wrap">
+<ol class="steps" aria-label="Pasos de la reserva"><li class="done"><span>✓</span><a href="reservar.html" style="color: inherit; text-decoration: none">Cancha y horario</a></li><li class="now"><span>2</span>Datos</li><li><span>3</span>Confirmar</li></ol>
+
+<sc-if value="{{missing}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="text-align: center; padding: 48px 24px"><h1 class="h2">Primero elige un horario</h1><p class="lead" style="margin: 0 auto 22px">Necesitamos saber qué cancha y qué franja quieres.</p><a class="btn" href="reservar.html">Ir a reservar</a></div>
+</sc-if>
+
+<sc-if value="{{ready}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start">
+<form onSubmit="{{submit}}" novalidate="" style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 22px">
+<h1 class="h1" style="font-size: 48px; margin: 0">Cuéntanos de tu actividad</h1>
+<sc-if value="{{hasErr}}" hint-placeholder-val="{{ false }}"><div class="alert a-err" role="alert"><div><b>Faltan datos para continuar:</b> {{errList}}</div></div></sc-if>
+
+<fieldset class="card" style="margin: 0; display: flex; flex-direction: column; gap: 18px">
+<legend class="eyebrow" style="padding: 0 6px">Actividad</legend>
+<div class="grid2">
+<div class="field {{e.actividad}}"><label for="actividad">Tipo de actividad *</label>
+<select id="actividad" onChange="{{set.actividad}}"><option value="">Selecciona…</option><option selected="{{a1}}">Partido recreativo</option><option selected="{{a2}}">Entrenamiento</option><option selected="{{a3}}">Torneo o evento</option><option selected="{{a4}}">Clase</option><option selected="{{a5}}">Otra</option></select>
+<sc-if value="{{e.actividad}}" hint-placeholder-val="{{ false }}"><span class="errtxt">✕ Elige el tipo de actividad.</span></sc-if></div>
+<div class="field {{e.participantes}}"><label for="participantes">Número aproximado de participantes *</label><input id="participantes" type="number" min="1" max="200" value="{{f.participantes}}" onInput="{{set.participantes}}">
+<sc-if value="{{e.participantes}}" hint-placeholder-val="{{ false }}"><span class="errtxt">✕ Escribe un número entre 1 y 200.</span></sc-if></div>
+</div>
+<div class="field"><label for="observaciones">Observaciones <span style="font-weight: 400; color: #5A6470">(opcional)</span></label><textarea id="observaciones" onInput="{{set.observaciones}}">{{f.observaciones}}</textarea></div>
+</fieldset>
+
+<sc-if value="{{externo}}" hint-placeholder-val="{{ false }}">
+<fieldset class="card" style="margin: 0; display: flex; flex-direction: column; gap: 16px">
+<legend class="eyebrow" style="padding: 0 6px">Facturación</legend>
+<div class="alert a-info" style="font-size: 14px">La factura se genera automáticamente con los datos de tu cuenta. <a href="perfil.html">Editar en mi perfil</a></div>
+<dl class="kv"><dt>{{fact.tipoPersona}}</dt><dd>{{fact.razon}} · {{fact.documento}}</dd><dt>Correo factura</dt><dd>{{fact.correo}}</dd><dt>Teléfono</dt><dd>{{fact.telefono}}</dd></dl>
+<div class="field">
+<span style="font-size: 14px; font-weight: 700">RUT actualizado (PDF) *</span>
+<sc-if value="{{rut}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center; border: 2px dashed #9CCFC4; background: #F3FAF8; border-radius: 14px; padding: 12px 16px">
+<span style="flex: 1 1 200px"><b>{{rut.nombre}}</b> <span style="font-size: 13px; color: #4A5560">· {{rutKb}} KB · guardado en tu cuenta</span></span>
+<label class="btn-out btn-sm" style="cursor: pointer">Reemplazar<input type="file" accept="application/pdf" onChange="{{onRut}}" style="display: none"></label>
+</div>
+</sc-if>
+<sc-if value="{{noRut}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center; border: 2px dashed {{rutBorder}}; border-radius: 14px; padding: 14px 16px; background: #FFFFFF">
+<span style="flex: 1 1 220px; font-size: 14px; color: #4A5560">Carga el RUT en PDF (máx. 2 MB). Se guarda en tu cuenta para próximas reservas.</span>
+<label class="btn-out btn-sm" style="cursor: pointer">Seleccionar PDF<input type="file" accept="application/pdf" onChange="{{onRut}}" style="display: none"></label>
+</div>
+<sc-if value="{{e.rut}}" hint-placeholder-val="{{ false }}"><span class="errtxt">✕ {{m.rut}}</span></sc-if>
+</sc-if>
+</div>
+</fieldset>
+</sc-if>
+
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 14px">
+<a class="btn-out" href="reservar.html">← Cambiar horario</a>
+<button class="btn" type="submit" style="font-size: 17px">Revisar reserva →</button>
+</div>
+</form>
+
+<aside aria-label="Resumen" style="flex: 1 1 300px; max-width: 400px; min-width: 0; background: #FFFFFF; border-radius: 18px; border: 1px solid #E1E4E6; overflow: hidden">
+<div style="background: #2B445F; color: #FFFFFF; padding: 20px 22px"><div style="font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #C9D6E3">Tu reserva</div><div style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 30px; text-transform: uppercase; margin-top: 4px">{{courtName}}</div></div>
+<dl class="kv" style="padding: 20px 22px"><dt>Fecha</dt><dd>{{fecha}}</dd><dt>Horario</dt><dd>{{hora}}</dd><dt>A nombre de</dt><dd>{{titular}}</dd><dt>Valor</dt><dd>{{valor}}</dd></dl>
+<div style="margin: 0 22px 22px; padding: 14px 16px; border-radius: 12px; font-size: 14px; line-height: 21px; background: #F4F5F6">{{nota}}</div>
+</aside>
+</div>
+</sc-if>
+</main>
+</div>
+<footer class="ftr"><div class="ftr-in">
+<div><b>Bienestar Universitario · Deportes</b><br>{{contacto}}</div>
+<div><a href="ayuda.html">Ayuda y preguntas frecuentes</a><br><a href="reglamento.html">Reglamento de uso</a><br><a href="escenarios.html">Escenarios</a><br><a href="personal.html">Acceso del personal (Tesorería · Bienestar)</a></div>
+<div><b>Vigilada MinEducación</b><br>Universidad de Medellín</div>
+</div></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    let d = {}; try { d = JSON.parse(sessionStorage.getItem('udem_datos')) || {}; } catch (e) {}
+    this.state = { f: Object.assign({ actividad: '', participantes: '', observaciones: '' }, d), err: {} };
+  }
+  renderVals() {
+    const U = UdeM, cm = U.comun();
+    if (!U.exigirSesion('datos.html')) return cm;
+    if (cm.staff) { location.replace('reservar.html'); return cm; }
+    const me = U.usuarioActual(), s = U.sel(), f = this.state.f, err = this.state.err, ext = me.tipo === 'externo';
+    const missing = s.hora === null || s.hora === undefined;
+    const e = {}; Object.keys(err).forEach((k) => { e[k] = 'err'; });
+    const set = {}; ['actividad', 'participantes', 'observaciones'].forEach((k) => { set[k] = (ev) => { f[k] = ev.target.value; }; });
+    const fact = me.facturacion || {}, rut = fact.rut || null;
+    const names = { actividad: 'tipo de actividad', participantes: 'participantes', rut: 'RUT' };
+    const c = U.cancha(s.cancha || 'A');
+    const acts = ['Partido recreativo', 'Entrenamiento', 'Torneo o evento', 'Clase', 'Otra'];
+    return Object.assign(cm, {
+      missing, ready: !missing, externo: ext, f, e, m: err, set, fact, rut, noRut: !rut, rutKb: rut ? Math.max(1, Math.round(rut.size / 1024)) : 0,
+      rutBorder: err.rut ? '#C2262B' : '#B7BEC5',
+      a1: f.actividad === acts[0], a2: f.actividad === acts[1], a3: f.actividad === acts[2], a4: f.actividad === acts[3], a5: f.actividad === acts[4],
+      hasErr: Object.keys(err).length > 0, errList: Object.keys(err).map((k) => names[k]).join(', '),
+      courtName: c.nombre, fecha: missing ? '—' : U.diaLargo(s.fecha), hora: missing ? '—' : U.franja(s.hora),
+      titular: ext ? (fact.razon || me.nombre) : me.nombre + ' · Comunidad UdeM',
+      valor: ext ? U.dinero(U.CFG.tarifaExternosHora) : 'Sin costo',
+      nota: ext ? 'Al confirmar se genera tu factura y el horario queda apartado ' + U.CFG.horasParaPagar + ' horas mientras pagas.' : 'Como integrante de la comunidad UdeM, tu reserva queda confirmada al terminar. No hay pagos.',
+      onRut: (ev) => {
+        const file = ev.target.files && ev.target.files[0]; if (!file) return;
+        if (!/pdf$/i.test(file.type) && !/\.pdf$/i.test(file.name)) { this.setState({ err: Object.assign({}, err, { rut: 'El archivo debe ser PDF.' }) }); return; }
+        if (file.size > 2 * 1024 * 1024) { this.setState({ err: Object.assign({}, err, { rut: 'El archivo supera 2 MB.' }) }); return; }
+        const done = (dataUrl) => {
+          const nf = Object.assign({}, fact, { rut: { nombre: file.name, size: file.size, fecha: new Date().toISOString(), dataUrl: dataUrl } });
+          U.actualizarUsuario({ facturacion: nf });
+          const ne = Object.assign({}, err); delete ne.rut; this.setState({ err: ne });
+        };
+        if (file.size <= 400 * 1024) { const rd = new FileReader(); rd.onload = () => done(rd.result); rd.readAsDataURL(file); } else done(null);
+      },
+      submit: (ev) => {
+        ev.preventDefault();
+        const ne = {};
+        if (!f.actividad) ne.actividad = 'Elige el tipo de actividad.';
+        const n = +f.participantes; if (!(n >= 1 && n <= 200)) ne.participantes = 'Número inválido.';
+        if (ext && !rut) ne.rut = 'El RUT es obligatorio para usuarios externos.';
+        if (Object.keys(ne).length) { this.setState({ err: ne }); window.scrollTo(0, 0); return; }
+        try { sessionStorage.setItem('udem_datos', JSON.stringify(f)); } catch (x) {}
+        U.ir('confirmar.html');
+      }
+    });
+  }
+}
+</script>
+</body>
+</html>

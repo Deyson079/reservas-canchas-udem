@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reglamento de uso · Reservas deportivas UdeM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="icon" href="assets/logo-udem.png">
+<script>window.UDEM_PORTAL = 'usuario';</script>
+<script src="assets/config.js"></script>
+<script src="assets/db.js"></script>
+<script src="assets/dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+<div class="demo">Versión de demostración · los datos se guardan solo en este navegador · los pagos son simulados</div>
+<header class="hdr"><div class="hdr-in">
+<sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a class="brand" href="index.html"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Reservas <span>Deportivas</span></b></a></sc-if><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><a class="brand" href="{{panelHref}}"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Portal del <span>personal</span></b></a></sc-if>
+<nav class="nav" aria-label="Principal"><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><sc-if value="{{showTes}}" hint-placeholder-val="{{ false }}"><a href="tesoreria.html" class="">Tesorería</a></sc-if><sc-if value="{{showBie}}" hint-placeholder-val="{{ false }}"><a href="bienestar.html" class="">Bienestar</a></sc-if><a href="personal.html" class="">Acceso del personal</a></sc-if><sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a href="reservar.html" class="">Reservar</a><a href="mis-reservas.html" class="">Mis reservas<sc-if value="{{hayNoti}}" hint-placeholder-val="{{ false }}"><span class="noti-dot" aria-label="{{nNoti}} avisos nuevos">{{nNoti}}</span></sc-if></a><a href="escenarios.html" class="">Escenarios</a><a href="ayuda.html" class="">Ayuda</a></sc-if></nav>
+<sc-if value="{{guest}}" hint-placeholder-val="{{ true }}"><div class="me"><a class="btn-out btn-sm" href="registro.html">Crear cuenta</a><a class="btn btn-sm" href="ingresar.html">Ingresar</a></div></sc-if>
+<sc-if value="{{u.logged}}" hint-placeholder-val="{{ false }}"><div class="me"><a class="chipuser" href="{{perfilHref}}" title="Mi cuenta"><i style="background: {{u.color}}">{{u.ini}}</i>{{u.nombre}} · {{u.rol}}</a><button class="linkbtn" onClick="{{salir}}" style="font-size: 14px">Salir</button></div></sc-if>
+</div></header>
+<div style="flex: 1 0 auto">
+<main class="wrap" style="max-width: 900px">
+<div class="eyebrow" style="color: #C2262B; margin-bottom: 8px">Condiciones de uso</div>
+<h1 class="h1">Reglamento de uso de escenarios deportivos</h1>
+<div class="alert a-warn" style="margin-bottom: 24px">Esta página es un espacio reservado del prototipo. Aquí debe enlazarse o publicarse el reglamento oficial vigente de la universidad; no se inventan normas.</div>
+<div class="card" style="display: flex; flex-direction: column; gap: 18px; font-size: 15px; line-height: 24px">
+<section><h2 style="font-size: 19px; margin: 0 0 6px">1. Quiénes pueden usar los escenarios</h2><p style="margin: 0; color: #4A5560">[Texto oficial]</p></section>
+<section><h2 style="font-size: 19px; margin: 0 0 6px">2. Anticipación y duración de las reservas</h2><p style="margin: 0; color: #4A5560">[Texto oficial]</p></section>
+<section><h2 style="font-size: 19px; margin: 0 0 6px">3. Tarifas y pagos para usuarios externos</h2><p style="margin: 0; color: #4A5560">[Texto oficial]</p></section>
+<section><h2 style="font-size: 19px; margin: 0 0 6px">4. Cambios, cancelaciones e inasistencia</h2><p style="margin: 0; color: #4A5560">[Texto oficial]</p></section>
+<section><h2 style="font-size: 19px; margin: 0 0 6px">5. Cuidado de los escenarios y conducta</h2><p style="margin: 0; color: #4A5560">[Texto oficial]</p></section>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px">
+<button class="btn-out" onClick="{{back}}">← Volver</button>
+<a class="btn" href="reservar.html">Ir a reservar</a>
+</div>
+</main>
+</div>
+<footer class="ftr"><div class="ftr-in">
+<div><b>Bienestar Universitario · Deportes</b><br>{{contacto}}</div>
+<div><a href="ayuda.html">Ayuda y preguntas frecuentes</a><br><a href="reglamento.html">Reglamento de uso</a><br><a href="escenarios.html">Escenarios</a><br><a href="personal.html">Acceso del personal (Tesorería · Bienestar)</a></div>
+<div><b>Vigilada MinEducación</b><br>Universidad de Medellín</div>
+</div></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() { return Object.assign(UdeM.comun(), { back: () => { if (history.length > 1) history.back(); else location.href = 'index.html'; } }); }
+}
+</script>
+</body>
+</html>

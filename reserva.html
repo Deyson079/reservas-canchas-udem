@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reserva · Reservas deportivas UdeM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="icon" href="assets/logo-udem.png">
+<script>window.UDEM_PORTAL = 'usuario';</script>
+<script src="assets/config.js"></script>
+<script src="assets/db.js"></script>
+<script src="assets/dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+<div class="demo">Versión de demostración · los datos se guardan solo en este navegador · los pagos son simulados</div>
+<header class="hdr"><div class="hdr-in">
+<sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a class="brand" href="index.html"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Reservas <span>Deportivas</span></b></a></sc-if><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><a class="brand" href="{{panelHref}}"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Portal del <span>personal</span></b></a></sc-if>
+<nav class="nav" aria-label="Principal"><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><sc-if value="{{showTes}}" hint-placeholder-val="{{ false }}"><a href="tesoreria.html" class="">Tesorería</a></sc-if><sc-if value="{{showBie}}" hint-placeholder-val="{{ false }}"><a href="bienestar.html" class="">Bienestar</a></sc-if><a href="personal.html" class="">Acceso del personal</a></sc-if><sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a href="reservar.html" class="">Reservar</a><a href="mis-reservas.html" class="on">Mis reservas<sc-if value="{{hayNoti}}" hint-placeholder-val="{{ false }}"><span class="noti-dot" aria-label="{{nNoti}} avisos nuevos">{{nNoti}}</span></sc-if></a><a href="escenarios.html" class="">Escenarios</a><a href="ayuda.html" class="">Ayuda</a></sc-if></nav>
+<sc-if value="{{guest}}" hint-placeholder-val="{{ true }}"><div class="me"><a class="btn-out btn-sm" href="registro.html">Crear cuenta</a><a class="btn btn-sm" href="ingresar.html">Ingresar</a></div></sc-if>
+<sc-if value="{{u.logged}}" hint-placeholder-val="{{ false }}"><div class="me"><a class="chipuser" href="{{perfilHref}}" title="Mi cuenta"><i style="background: {{u.color}}">{{u.ini}}</i>{{u.nombre}} · {{u.rol}}</a><button class="linkbtn" onClick="{{salir}}" style="font-size: 14px">Salir</button></div></sc-if>
+</div></header>
+<div style="flex: 1 0 auto">
+<main class="wrap" style="max-width: 1080px">
+<a href="{{backHref}}" style="display: inline-flex; align-items: center; font-weight: 600; text-decoration: none; margin-bottom: 16px; min-height: 44px">← {{backTxt}}</a>
+<sc-if value="{{none}}" hint-placeholder-val="{{ false }}"><div class="card" style="text-align: center; padding: 48px 24px"><h1 class="h2">No encontramos esta reserva</h1><a class="btn" href="{{backHref}}">Volver</a></div></sc-if>
+
+<sc-if value="{{ok}}" hint-placeholder-val="{{ true }}">
+<sc-if value="{{toast}}" hint-placeholder-val="{{ false }}"><div class="alert a-ok" role="status" style="margin-bottom: 16px">✓ {{toast}}</div></sc-if>
+<div style="border-radius: 22px; overflow: hidden; border: 1px solid #E1E4E6; background: #FFFFFF; margin-bottom: 22px">
+<div style="background: {{hero.bg}}; color: {{hero.fg}}; padding: 32px; display: flex; flex-wrap: wrap; gap: 22px; align-items: center">
+<div style="width: 72px; height: 72px; border-radius: 50%; background: #FFFFFF; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; font-size: 34px; font-weight: 800; color: {{hero.icon}}">{{hero.mark}}</div>
+<div style="flex: 1 1 380px">
+<div style="font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px">{{r.code}} · {{estadoTxt}}</div>
+<h1 class="h1" style="font-size: 46px; margin: 6px 0 6px">{{hero.title}}</h1>
+<div style="font-size: 16px; line-height: 25px">{{hero.text}}</div>
+</div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 0">
+<dl class="kv" style="flex: 2 1 420px; padding: 24px 28px">
+<dt>Cancha</dt><dd>{{courtName}}</dd>
+<dt>Fecha</dt><dd>{{fecha}}</dd>
+<dt>Horario</dt><dd>{{hora}}</dd>
+<dt>Actividad</dt><dd>{{r.actividad}} · {{r.participantes}} personas</dd>
+<sc-if value="{{r.observaciones}}" hint-placeholder-val="{{ false }}"><dt>Observaciones</dt><dd>{{r.observaciones}}</dd></sc-if>
+<dt>A nombre de</dt><dd>{{titular}}</dd>
+<dt>Valor</dt><dd>{{valor}}</dd>
+<sc-if value="{{r.factura}}" hint-placeholder-val="{{ false }}"><dt>Factura</dt><dd><a href="{{facturaHref}}">{{r.factura.numero}} · ver / imprimir</a></dd></sc-if>
+<sc-if value="{{pagoTxt}}" hint-placeholder-val="{{ false }}"><dt>Pago</dt><dd>{{pagoTxt}}</dd></sc-if>
+<sc-if value="{{verifTxt}}" hint-placeholder-val="{{ false }}"><dt>Validación</dt><dd>{{verifTxt}}</dd></sc-if>
+<sc-if value="{{asisTxt}}" hint-placeholder-val="{{ false }}"><dt>Asistencia</dt><dd>{{asisTxt}}</dd></sc-if>
+</dl>
+<div style="flex: 1 1 300px; padding: 24px 28px; border-left: 1px solid #EEF0F2; display: flex; flex-direction: column; gap: 12px">
+<div class="eyebrow">Acciones</div>
+<sc-if value="{{canPay}}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{r.rechazo}}" hint-placeholder-val="{{ false }}"><div class="alert a-err" style="font-size: 14px"><div><b>Tesorería rechazó tu pago:</b> {{r.rechazo}}</div></div></sc-if>
+<div style="font-size: 14px; color: #4D3A00; background: #FCF1D2; border-radius: 10px; padding: 10px 12px">Paga antes de: <b>{{limite}}</b></div>
+<a class="btn" href="{{pagoHref}}">Pagar en línea</a>
+<button class="btn-out" onClick="{{openComp}}">Subir comprobante de pago</button>
+</sc-if>
+<sc-if value="{{esperandoTes}}" hint-placeholder-val="{{ false }}"><div class="alert a-info" style="font-size: 14px">Tesorería está validando tu pago. Esta página se actualiza sola cuando cambie el estado.</div></sc-if>
+<sc-if value="{{tesVal}}" hint-placeholder-val="{{ false }}"><button class="btn" onClick="{{abrirValidar}}" style="background: #1D5A51">✓ Validar pago</button><button class="btn-out" onClick="{{abrirRechazar}}" style="border-color: #C2262B; color: #C2262B !important">Rechazar pago</button></sc-if>
+<sc-if value="{{tesManual}}" hint-placeholder-val="{{ false }}"><button class="btn-out" onClick="{{abrirManual}}">Registrar pago recibido</button></sc-if>
+<sc-if value="{{dataUrl}}" hint-placeholder-val="{{ false }}"><a class="btn-out" href="{{dataUrl}}" download="{{archivo}}">Descargar comprobante</a></sc-if>
+<sc-if value="{{bieAsis}}" hint-placeholder-val="{{ false }}"><button class="btn-out" onClick="{{asistio}}">Registrar: asistió</button><button class="btn-out" onClick="{{noAsistio}}">Registrar: no asistió</button></sc-if>
+<sc-if value="{{bieCancel}}" hint-placeholder-val="{{ false }}"><button class="btn-out" onClick="{{abrirCancelar}}" style="border-color: #C2262B; color: #C2262B !important">Cancelar reserva</button></sc-if>
+<sc-if value="{{canCal}}" hint-placeholder-val="{{ false }}"><button class="btn-out" onClick="{{addCal}}">Agregar a mi calendario (.ics)</button></sc-if>
+<sc-if value="{{canCancel}}" hint-placeholder-val="{{ false }}"><button class="btn-out" onClick="{{cancel}}" style="border-color: #C2262B; color: #C2262B !important">Cancelar reserva</button></sc-if>
+<sc-if value="{{esUsuario}}" hint-placeholder-val="{{ true }}"><a class="btn-out" href="reservar.html" style="border-color: transparent">Hacer otra reserva</a></sc-if>
+</div>
+</div>
+</div>
+
+<sc-if value="{{staff}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="margin-bottom: 22px">
+<div class="eyebrow" style="margin-bottom: 12px">Solicitante</div>
+<dl class="kv"><dt>Nombre</dt><dd>{{owner.nombre}}</dd><dt>Correo</dt><dd>{{owner.email}}</dd><dt>Tipo</dt><dd>{{ownerTipo}}</dd>
+<sc-if value="{{ownerFact}}" hint-placeholder-val="{{ false }}"><dt>Facturación</dt><dd>{{ownerFact}}</dd></sc-if>
+<dt>Reservas totales</dt><dd>{{ownerN}}</dd><dt>Solicitud creada</dt><dd>{{creada}}</dd></dl>
+</div>
+</sc-if>
+
+<sc-if value="{{showComp}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="margin-bottom: 22px; border: 2px solid #2B445F">
+<h2 style="font-size: 20px; margin: 0 0 6px">Subir comprobante de pago</h2>
+<p style="font-size: 14px; color: #4A5560; margin: 0 0 16px">Si pagaste por transferencia o consignación, carga el soporte (PDF o imagen, máx. 2 MB). Tesorería lo valida y confirma tu reserva. Datos de la cuenta para pagar: [por definir con Tesorería].</p>
+<div class="field" style="margin-bottom: 14px"><label for="comp">Archivo del comprobante *</label><input id="comp" type="file" accept="application/pdf,image/*" onChange="{{onComp}}" style="height: auto; padding: 10px"></div>
+<sc-if value="{{fileName}}" hint-placeholder-val="{{ false }}"><div class="chip c-ok" style="margin-bottom: 12px">✓ {{fileName}}</div></sc-if>
+<sc-if value="{{compErr}}" hint-placeholder-val="{{ false }}"><div class="errtxt" style="margin-bottom: 10px">✕ {{compErr}}</div></sc-if>
+<div class="field" style="margin-bottom: 16px"><label for="nota">Referencia o nota <span style="font-weight: 400; color: #5A6470">(opcional)</span></label><input id="nota" placeholder="N.º de transacción, banco…"></div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px"><button class="btn" onClick="{{sendComp}}">Enviar a Tesorería</button><button class="btn-out" onClick="{{closeComp}}">Cancelar</button></div>
+</div>
+</sc-if>
+
+<div style="display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start">
+<sc-if value="{{externo}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="flex: 1 1 360px">
+<div class="eyebrow" style="margin-bottom: 14px">Seguimiento</div>
+<ol style="list-style: none; margin: 0; padding: 0">
+<sc-for list="{{steps}}" as="p" hint-placeholder-count="5">
+<li style="display: flex; gap: 14px; align-items: flex-start; min-height: 50px"><span style="{{p.dot}}">{{p.mark}}</span><span style="display: flex; flex-direction: column; gap: 2px; padding-top: 3px"><span style="{{p.ls}}">{{p.label}}</span><span style="font-size: 13px; color: #5A6470">{{p.sub}}</span></span></li>
+</sc-for>
+</ol>
+</div>
+</sc-if>
+<div class="card" style="flex: 1 1 360px">
+<div class="eyebrow" style="margin-bottom: 14px">Historial</div>
+<sc-for list="{{hist}}" as="h" hint-placeholder-count="3"><div style="display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid #EEF0F2; font-size: 14px"><span style="color: #5A6470; white-space: nowrap">{{h.t}}</span><span>{{h.msg}}<sc-if value="{{h.por}}" hint-placeholder-val="{{ false }}"> <span style="color: #5A6470">· {{h.por}}</span></sc-if></span></div></sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{modal}}" hint-placeholder-val="{{ false }}">
+<div class="modal-bg" role="dialog" aria-modal="true" aria-labelledby="mt">
+<div class="modal" style="padding: 26px">
+<h2 id="mt" style="font-size: 22px; margin: 0 0 8px">{{m.titulo}}</h2>
+<p style="font-size: 15px; line-height: 23px; color: #3A4652; margin: 0 0 16px">{{m.texto}}</p>
+<div class="field {{m.errCls}}" style="margin-bottom: 18px"><label for="mtxt">{{m.label}}</label><textarea id="mtxt" style="height: 80px" placeholder="{{m.ph}}"></textarea><sc-if value="{{m.err}}" hint-placeholder-val="{{ false }}"><span class="errtxt">✕ {{m.err}}</span></sc-if></div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: flex-end"><button class="btn-out btn-sm" onClick="{{cerrarModal}}">Volver</button><button class="btn btn-sm" onClick="{{confirmarModal}}" style="{{m.btnStyle}}">{{m.boton}}</button></div>
+</div>
+</div>
+</sc-if>
+</main>
+</div>
+<footer class="ftr"><div class="ftr-in">
+<div><b>Bienestar Universitario · Deportes</b><br>{{contacto}}</div>
+<div><a href="ayuda.html">Ayuda y preguntas frecuentes</a><br><a href="reglamento.html">Reglamento de uso</a><br><a href="escenarios.html">Escenarios</a><br><a href="personal.html">Acceso del personal (Tesorería · Bienestar)</a></div>
+<div><b>Vigilada MinEducación</b><br>Universidad de Medellín</div>
+</div></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { comp: false, compErr: '', file: null, modal: null, err: '', toast: '' }; }
+  renderVals() {
+    const U = UdeM, cm = U.comun();
+    if (!U.exigirSesion()) return cm;
+    const me = U.usuarioActual(), r = U.reserva(U.q('c')), st = this.state;
+    const isOwner = !!r && r.userId === me.id, staff = me.rol !== 'usuario';
+    const backHref = me.rol === 'tesoreria' ? 'tesoreria.html' : me.rol === 'bienestar' ? 'bienestar.html' : 'mis-reservas.html';
+    const backTxt = me.rol === 'tesoreria' ? 'Panel de Tesorería' : me.rol === 'bienestar' ? 'Panel de Bienestar' : 'Mis reservas';
+    if (!r || !(isOwner || staff)) return Object.assign(cm, { none: true, ok: false, backHref, backTxt });
+    if (isOwner) U.marcarLeidas(r.code);
+    const ev = U.estadoVisible(r), c = U.cancha(r.cancha), owner = U.usuario(r.userId) || {}, ext = r.tipo === 'externo';
+    const nueva = U.q('nueva') === '1';
+    const heroes = {
+      confirmada: { bg: '#1D5A51', fg: '#FFFFFF', icon: '#1D5A51', mark: '✓', title: nueva ? '¡Reserva confirmada!' : 'Reserva confirmada', text: ext ? 'Tesorería validó el pago. Te esperamos en la cancha.' : 'Comunidad UdeM: sin costo. Te esperamos en la cancha.' },
+      pendiente_pago: { bg: '#FCF1D2', fg: '#3D2E00', icon: '#6E5200', mark: '◷', title: nueva ? 'Horario apartado: falta el pago' : 'Pendiente de pago', text: r.rechazo ? 'Tesorería rechazó el pago anterior. Paga de nuevo o sube otro comprobante antes del plazo.' : 'La factura ya está generada. Paga en línea o sube el comprobante antes del plazo; Tesorería validará el pago.' },
+      en_verificacion: { bg: '#E3ECF6', fg: '#213650', icon: '#3A66AA', mark: '◷', title: 'Pago en validación', text: 'El pago quedó registrado. Tesorería lo está validando y la reserva se confirmará en cuanto lo apruebe.' },
+      cancelada: { bg: '#ECEEEF', fg: '#16222F', icon: '#4A5257', mark: '✕', title: 'Reserva cancelada', text: (r.motivoCancelacion ? 'Motivo: ' + r.motivoCancelacion + '. ' : '') + 'El horario quedó libre para otras personas.' },
+      vencida: { bg: '#F6E4E4', fg: '#5E1619', icon: '#932428', mark: '!', title: 'Reserva vencida', text: 'No se registró el pago dentro del plazo y el horario se liberó.' },
+      finalizada: { bg: '#ECEEEF', fg: '#16222F', icon: '#4A5257', mark: '✓', title: 'Reserva finalizada', text: 'Esta reserva ya pasó.' }
+    };
+    const order = ['Solicitud creada', 'Factura generada', 'Pago registrado', 'Validación de Tesorería', 'Reserva confirmada'];
+    const done = r.estado === 'confirmada' ? 5 : r.estado === 'en_verificacion' ? 3 : 2;
+    const subs = ['', r.factura ? r.factura.numero : '', r.estado === 'pendiente_pago' ? 'En línea o con comprobante' : (r.pago ? r.pago.metodo : ''), r.pago && r.pago.verificado ? r.pago.verificado.por : 'Tesorería', ''];
+    const steps = order.map((label, i) => {
+      const d = i < done, cur = i === done && ['pendiente_pago', 'en_verificacion'].indexOf(r.estado) !== -1;
+      return { label, sub: d ? (subs[i] || 'Completado') : (cur ? 'En curso · ' + subs[i] : subs[i]), mark: d ? '✓' : String(i + 1),
+        dot: 'flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; ' + (d ? 'background: #1D5A51; color: #FFFFFF' : cur ? 'background: #FCF1D2; color: #6E5200; border: 2px dashed #B98A0A' : 'background: #FFFFFF; color: #5A6470; border: 2px solid #C9CED1'),
+        ls: 'font-size: 15px; font-weight: 700; color: ' + (d || cur ? '#16222F' : '#5A6470') };
+    });
+    const fmtT = (t) => { const d = new Date(t); return d.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }); };
+    const future = ['confirmada', 'pendiente_pago', 'en_verificacion'].indexOf(ev) !== -1;
+    const tes = me.rol === 'tesoreria', bie = me.rol === 'bienestar';
+    const MOD = {
+      validar: { titulo: 'Validar pago de ' + r.code, texto: 'La reserva quedará confirmada y el usuario verá el cambio de estado.', label: 'Nota interna (opcional)', ph: 'Ej.: verificado en extracto bancario', boton: '✓ Validar pago', btnStyle: 'background: #1D5A51', opcional: true },
+      rechazar: { titulo: 'Rechazar pago de ' + r.code, texto: 'El usuario verá el motivo y tendrá 24 horas para pagar de nuevo.', label: 'Motivo (lo verá el usuario) *', ph: 'Ej.: el valor no coincide con la factura', boton: 'Rechazar pago', btnStyle: '' },
+      manual: { titulo: 'Registrar pago recibido · ' + r.code, texto: 'La reserva quedará confirmada.', label: 'Referencia o soporte *', ph: 'Ej.: recibo de caja 00123', boton: 'Registrar y confirmar', btnStyle: 'background: #1D5A51' },
+      cancelar: { titulo: 'Cancelar ' + r.code, texto: 'El usuario recibirá un aviso con el motivo y el horario quedará libre.', label: 'Motivo (lo verá el usuario) *', ph: 'Ej.: evento institucional en la cancha', boton: 'Cancelar reserva', btnStyle: '' }
+    };
+    const M = st.modal ? MOD[st.modal] : {};
+    const misN = U.todas().filter((x) => x.userId === r.userId).length;
+    const f = owner.facturacion;
+    return Object.assign(cm, {
+      none: false, ok: true, r, hero: heroes[ev], estadoTxt: U.ESTADOS[ev].txt.replace(/^[✓◷] /, ''), backHref, backTxt, toast: st.toast,
+      courtName: c.nombre, fecha: U.diaLargo(r.fecha), hora: U.franja(r.hora),
+      titular: ext ? (r.factura ? r.factura.datos.razon : owner.nombre) + ' (externo)' : owner.nombre + ' · Comunidad UdeM',
+      valor: ext ? U.dinero(r.valor) : 'Sin costo', facturaHref: 'factura.html?c=' + r.code + (staff ? '&vista=' + me.rol : ''),
+      pagoTxt: r.pago ? r.pago.metodo + (r.pago.referencia ? ' · ref. ' + r.pago.referencia : '') + (r.pago.archivo ? ' · ' + r.pago.archivo.nombre : '') + ' · ' + fmtT(r.pago.fecha) : '',
+      verifTxt: r.pago && r.pago.verificado ? 'Aprobado por ' + r.pago.verificado.por + ' · ' + fmtT(r.pago.verificado.t) : '',
+      asisTxt: r.asistencia === undefined ? '' : (r.asistencia ? 'Asistió' : 'No asistió'),
+      archivo: r.pago && r.pago.archivo ? r.pago.archivo.nombre : '', dataUrl: staff && r.pago && r.pago.archivo && r.pago.archivo.dataUrl ? r.pago.archivo.dataUrl : '',
+      externo: ext, steps, hist: (r.historial || []).slice().reverse().map((h) => ({ t: fmtT(h.t), msg: h.msg, por: staff ? h.por || '' : '' })),
+      canPay: isOwner && r.estado === 'pendiente_pago', limite: r.limitePago ? fmtT(r.limitePago) : '', esperandoTes: isOwner && r.estado === 'en_verificacion',
+      pagoHref: 'pago.html?c=' + r.code, canCal: isOwner && future, canCancel: isOwner && future,
+      tesVal: tes && r.estado === 'en_verificacion', tesManual: tes && r.estado === 'pendiente_pago',
+      bieCancel: bie && future, bieAsis: bie && r.estado === 'confirmada' && U.pasada(r.fecha, r.hora),
+      owner, ownerTipo: owner.tipo === 'externo' ? 'Usuario externo' : 'Comunidad UdeM', ownerFact: f ? f.tipoPersona + ' · ' + f.razon + ' · ' + f.documento + ' · ' + f.telefono : '', ownerN: misN, creada: fmtT(r.creada),
+      showComp: st.comp, compErr: st.compErr, fileName: st.file ? st.file.nombre : '',
+      openComp: () => this.setState({ comp: true, compErr: '' }), closeComp: () => this.setState({ comp: false }),
+      onComp: (e) => {
+        const fl = e.target.files && e.target.files[0]; if (!fl) return;
+        if (fl.size > 2 * 1024 * 1024) { this.setState({ compErr: 'El archivo supera 2 MB.' }); return; }
+        const meta = { nombre: fl.name, size: fl.size, tipo: fl.type };
+        if (fl.size <= 500 * 1024) { const rd = new FileReader(); rd.onload = () => { meta.dataUrl = rd.result; }; rd.readAsDataURL(fl); }
+        this.state.file = meta; this.setState({ compErr: '' });
+      },
+      sendComp: () => {
+        if (!st.file) { this.setState({ compErr: 'Selecciona el archivo del comprobante.' }); return; }
+        U.subirComprobante(r.code, st.file, (document.getElementById('nota') || {}).value);
+        this.setState({ comp: false, file: null, toast: 'Comprobante enviado. Tesorería lo validará y verás aquí el nuevo estado.' });
+      },
+      addCal: () => U.ics(r),
+      cancel: () => { if (confirm('¿Cancelar la reserva ' + r.code + '? El horario quedará libre.')) { U.cancelar(r.code); this.setState({ toast: 'Reserva cancelada.' }); } },
+      asistio: () => { U.marcarAsistencia(r.code, true); this.setState({ toast: 'Asistencia registrada.' }); },
+      noAsistio: () => { U.marcarAsistencia(r.code, false); this.setState({ toast: 'Inasistencia registrada.' }); },
+      abrirValidar: () => this.setState({ modal: 'validar', err: '' }), abrirRechazar: () => this.setState({ modal: 'rechazar', err: '' }),
+      abrirManual: () => this.setState({ modal: 'manual', err: '' }), abrirCancelar: () => this.setState({ modal: 'cancelar', err: '' }),
+      modal: !!st.modal, m: Object.assign({ err: st.err, errCls: st.err ? 'err' : '' }, M),
+      cerrarModal: () => this.setState({ modal: null, err: '' }),
+      confirmarModal: () => {
+        const t = ((document.getElementById('mtxt') || {}).value || '').trim();
+        if (!M.opcional && !t) { this.setState({ err: 'Este campo es obligatorio.' }); return; }
+        const a = st.modal;
+        if (a === 'validar') U.verificarPago(r.code, true, t);
+        if (a === 'rechazar') U.verificarPago(r.code, false, t);
+        if (a === 'manual') U.registrarPagoManual(r.code, t);
+        if (a === 'cancelar') U.cancelar(r.code, 'Bienestar Universitario', t);
+        const msg = { validar: 'Pago validado: la reserva quedó confirmada.', rechazar: 'Pago rechazado: el usuario fue notificado.', manual: 'Pago registrado: la reserva quedó confirmada.', cancelar: 'Reserva cancelada: el usuario fue notificado.' }[a];
+        this.setState({ modal: null, err: '', toast: msg });
+      }
+    });
+  }
+}
+</script>
+</body>
+</html>

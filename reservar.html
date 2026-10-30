@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reservar · Reservas deportivas UdeM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="icon" href="assets/logo-udem.png">
+<script>window.UDEM_PORTAL = 'usuario';</script>
+<script src="assets/config.js"></script>
+<script src="assets/db.js"></script>
+<script src="assets/dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+<div class="demo">Versión de demostración · los datos se guardan solo en este navegador · los pagos son simulados</div>
+<header class="hdr"><div class="hdr-in">
+<sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a class="brand" href="index.html"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Reservas <span>Deportivas</span></b></a></sc-if><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><a class="brand" href="{{panelHref}}"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Portal del <span>personal</span></b></a></sc-if>
+<nav class="nav" aria-label="Principal"><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><sc-if value="{{showTes}}" hint-placeholder-val="{{ false }}"><a href="tesoreria.html" class="">Tesorería</a></sc-if><sc-if value="{{showBie}}" hint-placeholder-val="{{ false }}"><a href="bienestar.html" class="">Bienestar</a></sc-if><a href="personal.html" class="">Acceso del personal</a></sc-if><sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a href="reservar.html" class="on">Reservar</a><a href="mis-reservas.html" class="">Mis reservas<sc-if value="{{hayNoti}}" hint-placeholder-val="{{ false }}"><span class="noti-dot" aria-label="{{nNoti}} avisos nuevos">{{nNoti}}</span></sc-if></a><a href="escenarios.html" class="">Escenarios</a><a href="ayuda.html" class="">Ayuda</a></sc-if></nav>
+<sc-if value="{{guest}}" hint-placeholder-val="{{ true }}"><div class="me"><a class="btn-out btn-sm" href="registro.html">Crear cuenta</a><a class="btn btn-sm" href="ingresar.html">Ingresar</a></div></sc-if>
+<sc-if value="{{u.logged}}" hint-placeholder-val="{{ false }}"><div class="me"><a class="chipuser" href="{{perfilHref}}" title="Mi cuenta"><i style="background: {{u.color}}">{{u.ini}}</i>{{u.nombre}} · {{u.rol}}</a><button class="linkbtn" onClick="{{salir}}" style="font-size: 14px">Salir</button></div></sc-if>
+</div></header>
+<div style="flex: 1 0 auto">
+<main class="wrap">
+<sc-if value="{{bienvenida}}" hint-placeholder-val="{{ false }}"><div class="alert a-ok" role="status" style="margin-bottom: 20px"><div><b>¡Cuenta creada, {{u.nombre}}!</b> {{bienvenidaTxt}}</div></div></sc-if>
+<ol class="steps" aria-label="Pasos de la reserva"><li class="now"><span>1</span>Cancha y horario</li><li><span>2</span>Datos</li><li><span>3</span>Confirmar</li></ol>
+<h1 class="h1">¿Dónde y cuándo juegas?</h1>
+<p class="lead">Elige una cancha, un día y una franja libre. Puedes reservar hasta {{diasAnt}} días adelante.</p>
+
+<sc-if value="{{guest}}" hint-placeholder-val="{{ false }}"><div class="alert a-info" style="margin-bottom: 22px; flex-wrap: wrap; align-items: center"><span style="flex: 1 1 300px">Estás consultando como visitante. Para reservar necesitas una cuenta.</span><a class="btn-out btn-sm" href="registro.html?next=reservar.html">Crear cuenta</a><a class="btn btn-sm" href="ingresar.html?next=reservar.html">Ingresar</a></div></sc-if>
+<sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><div class="alert a-warn" style="margin-bottom: 22px">Estás con una cuenta del personal: puedes consultar la disponibilidad, pero las reservas se hacen con cuentas de usuario. <a href="personal.html">Ir al portal del personal</a></div></sc-if>
+
+<div class="stickybar" role="region" aria-label="Filtros de la reserva">
+<div class="sb-row"><span class="sb-lbl">Cancha</span><div class="sb-scroll" role="group" aria-label="Cancha">
+<sc-for list="{{courts}}" as="c" hint-placeholder-count="3"><button class="pill {{c.offCls}}" onClick="{{c.pick}}" aria-pressed="{{c.selected}}" title="{{c.deportes}}">{{c.corto}} <small>{{c.chip}}</small></button></sc-for>
+</div></div>
+<div class="sb-row"><span class="sb-lbl">Día</span><div class="sb-scroll" role="group" aria-label="Día">
+<sc-for list="{{days}}" as="d" hint-placeholder-count="14"><button class="dayb" onClick="{{d.pick}}" aria-pressed="{{d.selected}}" aria-label="{{d.largo}}"><span>{{d.top}}</span><b>{{d.num}}</b><small>{{d.free}}</small></button></sc-for>
+</div></div>
+<div class="sb-now">
+<div class="viendo" aria-live="polite">Viendo: <b>{{courtName}}</b> · <b>{{dayLabel}}</b><br>Tu selección: <b>{{summary}}</b><sc-if value="{{precio}}" hint-placeholder-val="{{ false }}"> · {{precio}}</sc-if></div>
+<sc-if value="{{canGo}}" hint-placeholder-val="{{ false }}"><a class="btn btn-sm" href="{{nextHref}}">{{nextText}} →</a></sc-if>
+<sc-if value="{{cantGo}}" hint-placeholder-val="{{ true }}"><button class="btn btn-sm" disabled="{{ true }}">{{blockedText}}</button></sc-if>
+</div>
+</div>
+
+<section class="card" style="padding: 22px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 16px">
+<div><h2 style="font-size: 20px; margin: 0">Horarios · {{courtName}}</h2><div style="font-size: 14px; color: #4A5560; margin-top: 4px">{{dayLong}} · {{courtSports}} · <a href="escenarios.html">ver escenario</a></div></div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; color: #4A5560">
+<span style="display: inline-flex; align-items: center; gap: 6px"><i style="width: 14px; height: 14px; border-radius: 4px; background: #E2F1EE; border: 1.5px solid #3E8E80"></i>Libre</span>
+<span style="display: inline-flex; align-items: center; gap: 6px"><i style="width: 14px; height: 14px; border-radius: 4px; background: repeating-linear-gradient(135deg, #ECEEEF 0 3px, #D5D9DC 3px 6px); border: 1.5px solid #9AA3AA"></i>Reservada</span>
+<span style="display: inline-flex; align-items: center; gap: 6px"><i style="width: 14px; height: 14px; border-radius: 4px; background: #FCF1D2; border: 1.5px dashed #B98A0A"></i>Pendiente de pago</span>
+<span style="display: inline-flex; align-items: center; gap: 6px"><i style="width: 14px; height: 14px; border-radius: 4px; background: #E3ECF6; border: 1.5px solid #3A66AA"></i>Tu reserva</span>
+<span style="display: inline-flex; align-items: center; gap: 6px"><i style="width: 14px; height: 14px; border-radius: 4px; background: #2B445F"></i>Tu selección</span>
+</div>
+</div>
+<sc-if value="{{noSlots}}" hint-placeholder-val="{{ false }}">
+<div role="status" class="alert {{emptyCls}}" style="flex-direction: column; margin-bottom: 14px">
+<b>{{emptyTitle}}</b>
+<sc-if value="{{hasAlts}}" hint-placeholder-val="{{ true }}"><span>Franjas libres más cercanas:</span>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px">
+<sc-for list="{{alts}}" as="a" hint-placeholder-count="4"><button onClick="{{a.pick}}" class="chip c-ok" style="cursor: pointer; min-height: 44px; font-size: 14px">✓ {{a.label}}</button></sc-for>
+</div></sc-if>
+</div>
+</sc-if>
+<sc-if value="{{showGrid}}" hint-placeholder-val="{{ true }}">
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px">
+<sc-for list="{{slots}}" as="s" hint-placeholder-count="14">
+<button onClick="{{s.pick}}" disabled="{{s.disabled}}" aria-pressed="{{s.selected}}" aria-label="{{s.aria}}" title="{{s.title}}" style="{{s.style}}">
+<span style="font-weight: 700; font-size: 15px">{{s.hora}}</span>
+<span style="font-size: 12px; font-weight: 600">{{s.label}}</span>
+</button>
+</sc-for>
+</div>
+</sc-if>
+</section>
+</main>
+</div>
+<footer class="ftr"><div class="ftr-in">
+<div><b>Bienestar Universitario · Deportes</b><br>{{contacto}}</div>
+<div><a href="ayuda.html">Ayuda y preguntas frecuentes</a><br><a href="reglamento.html">Reglamento de uso</a><br><a href="escenarios.html">Escenarios</a><br><a href="personal.html">Acceso del personal (Tesorería · Bienestar)</a></div>
+<div><b>Vigilada MinEducación</b><br>Universidad de Medellín</div>
+</div></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const U = UdeM, s = U.sel(), q = (k) => U.q(k), dias = U.dias().map((d) => d.iso);
+    const st = { cancha: s.cancha || 'A', fecha: s.fecha && dias.indexOf(s.fecha) !== -1 ? s.fecha : dias[0], hora: s.hora === undefined ? null : s.hora };
+    if (q('cancha')) { st.cancha = q('cancha'); st.hora = null; }
+    if (q('fecha') && dias.indexOf(q('fecha')) !== -1) { st.fecha = q('fecha'); st.hora = null; }
+    if (q('hora')) st.hora = +q('hora');
+    this.state = st; U.sel(st);
+  }
+  save(s) { const n = Object.assign({}, this.state, s); UdeM.sel({ cancha: n.cancha, fecha: n.fecha, hora: n.hora }); this.setState(s); }
+  renderVals() {
+    const U = UdeM, st = this.state, cm = U.comun(), me = U.usuarioActual(), uid = me && me.id;
+    const c = U.cancha(st.cancha), fuera = U.fueraDeServicio(c.id);
+    const courts = U.canchas().map((x) => {
+      const sel = x.id === st.cancha, fx = U.fueraDeServicio(x.id);
+      return Object.assign({}, x, {
+        selected: sel, chip: fx ? '⊘ fuera de servicio' : U.libres(x.id, st.fecha) + ' libres', chipClass: fx ? 'c-off' : 'c-ok', offCls: fx ? 'off' : '',
+        style: 'display: flex; gap: 14px; padding: 16px; border-radius: 14px; color: #16222F; cursor: pointer; background: #FFFFFF; ' + (sel ? 'border: 2.5px solid #C2262B; box-shadow: 0 8px 20px rgba(194,38,43,0.15)' : 'border: 1.5px solid #D5D9DC'),
+        pick: () => this.save({ cancha: x.id, hora: null })
+      });
+    });
+    const days = U.dias().map((d) => {
+      const n = U.libres(st.cancha, d.iso), sel = d.iso === st.fecha;
+      return Object.assign({}, d, {
+        top: d.hoy ? 'Hoy' : d.dow, selected: sel, free: fuera ? 'cerrada' : (n === 0 ? 'sin cupo' : n + ' libres'),
+        style: 'display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px; min-height: 88px; border-radius: 12px; cursor: pointer; ' + (sel ? 'background: #C2262B; color: #FFFFFF; border: 2px solid #C2262B' : 'background: #FFFFFF; color: #16222F; border: 1.5px solid #D5D9DC'),
+        pick: () => this.save({ fecha: d.iso, hora: null })
+      });
+    });
+    const base = 'display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 12px 14px; min-height: 64px; border-radius: 12px; text-align: left; ';
+    const look = {
+      libre: ['background: #E2F1EE; color: #1D5A51; border: 1.5px solid #3E8E80; cursor: pointer', '✓ Libre', 'Elegir esta franja'],
+      reservada: ['background: repeating-linear-gradient(135deg, #F1F2F3 0 6px, #E4E7E9 6px 12px); color: #4A5257; border: 1.5px solid #C9CED1; cursor: not-allowed', 'Reservada', 'Ya está reservada'],
+      pendiente: ['background: #FCF1D2; color: #6E5200; border: 1.5px dashed #B98A0A; cursor: not-allowed', '◷ Pendiente de pago', 'Apartada por otra persona mientras paga'],
+      mia: ['background: #E3ECF6; color: #213650; border: 1.5px solid #3A66AA; cursor: not-allowed', '★ Tu reserva', 'Ya tienes esta franja'],
+      pasada: ['background: #F4F5F6; color: #8A939B; border: 1.5px solid #E1E4E6; cursor: not-allowed', 'Ya pasó', 'Esta hora ya pasó'],
+      fuera: ['background: #F6E4E4; color: #7E1E22; border: 1.5px solid #E3B3B5; cursor: not-allowed', '⊘ Fuera de servicio', 'Cancha fuera de servicio']
+    };
+    const slots = U.horas().map((h) => {
+      const s = U.estadoFranja(c.id, st.fecha, h, uid), sel = st.hora === h && s === 'libre';
+      const l = sel ? ['background: #2B445F; color: #FFFFFF; border: 2px solid #2B445F; cursor: pointer; box-shadow: 0 6px 16px rgba(43,68,95,0.35)', '● Seleccionada', ''] : look[s];
+      return { hora: U.franja(h), label: l[1], title: l[2], style: base + l[0], selected: sel, disabled: s !== 'libre', aria: U.franja(h) + ', ' + l[1], pick: () => this.save({ hora: h }) };
+    });
+    const free = fuera ? 0 : U.libres(c.id, st.fecha);
+    const alts = (fuera || free === 0) ? U.alternativas(c.id, st.fecha, 4).map((a) => ({ label: U.cancha(a.cancha).corto + ' · ' + U.diaCorto(a.fecha) + ' · ' + U.hora(a.hora), pick: () => this.save({ cancha: a.cancha, fecha: a.fecha, hora: a.hora }) })) : [];
+    const hasSlot = st.hora !== null && st.hora !== undefined && U.estadoFranja(c.id, st.fecha, st.hora, uid) === 'libre';
+    const canGo = hasSlot && !cm.staff;
+    const ext = me && me.tipo === 'externo';
+    return Object.assign(cm, {
+      courts, days, slots, alts, hasAlts: alts.length > 0, courtName: c.nombre, courtSports: c.deportes, dayLabel: U.diaCorto(st.fecha), dayLong: U.diaLargo(st.fecha), diasAnt: U.CFG.diasAnticipacion,
+      noSlots: !!fuera || free === 0, showGrid: !fuera, emptyCls: fuera ? 'a-err' : 'a-warn',
+      emptyTitle: fuera ? 'Esta cancha está fuera de servicio: ' + fuera : 'Este día ya no tiene franjas libres en ' + c.nombre + '.',
+      canGo, cantGo: !canGo, blockedText: cm.staff ? 'Solo cuentas de usuario' : 'Elige una franja',
+      summary: hasSlot ? U.franja(st.hora) : 'elige una franja libre',
+      precio: hasSlot && me ? (ext ? U.dinero(U.CFG.tarifaExternosHora) : (me.rol === 'usuario' ? 'sin costo' : '')) : '',
+      nextHref: cm.guest ? 'ingresar.html?next=datos.html' : 'datos.html', nextText: cm.guest ? 'Ingresar y continuar' : 'Continuar',
+      bienvenida: U.q('bienvenida') === '1' && !!me,
+      bienvenidaTxt: ext ? 'Tu cuenta es de usuario externo: tus reservas generan factura y se confirman al aprobarse el pago.' : 'Tu cuenta es de la comunidad UdeM: tus reservas no tienen costo.'
+    });
+  }
+}
+</script>
+</body>
+</html>

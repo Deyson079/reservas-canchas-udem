@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel de Tesorería · Reservas deportivas UdeM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="icon" href="assets/logo-udem.png">
+<script>window.UDEM_PORTAL = 'tesoreria';</script>
+<script src="assets/config.js"></script>
+<script src="assets/db.js"></script>
+<script src="assets/dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+<div class="demo">Versión de demostración · los datos se guardan solo en este navegador · los pagos son simulados</div>
+<header class="hdr"><div class="hdr-in">
+<sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a class="brand" href="index.html"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Reservas <span>Deportivas</span></b></a></sc-if><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><a class="brand" href="{{panelHref}}"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Portal del <span>personal</span></b></a></sc-if>
+<nav class="nav" aria-label="Principal"><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><sc-if value="{{showTes}}" hint-placeholder-val="{{ false }}"><a href="tesoreria.html" class="on">Tesorería</a></sc-if><sc-if value="{{showBie}}" hint-placeholder-val="{{ false }}"><a href="bienestar.html" class="">Bienestar</a></sc-if><a href="personal.html" class="">Acceso del personal</a></sc-if><sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a href="reservar.html" class="">Reservar</a><a href="mis-reservas.html" class="">Mis reservas<sc-if value="{{hayNoti}}" hint-placeholder-val="{{ false }}"><span class="noti-dot" aria-label="{{nNoti}} avisos nuevos">{{nNoti}}</span></sc-if></a><a href="escenarios.html" class="">Escenarios</a><a href="ayuda.html" class="">Ayuda</a></sc-if></nav>
+<sc-if value="{{guest}}" hint-placeholder-val="{{ true }}"><div class="me"><a class="btn-out btn-sm" href="registro.html">Crear cuenta</a><a class="btn btn-sm" href="ingresar.html">Ingresar</a></div></sc-if>
+<sc-if value="{{u.logged}}" hint-placeholder-val="{{ false }}"><div class="me"><a class="chipuser" href="{{perfilHref}}" title="Mi cuenta"><i style="background: {{u.color}}">{{u.ini}}</i>{{u.nombre}} · {{u.rol}}</a><button class="linkbtn" onClick="{{salir}}" style="font-size: 14px">Salir</button></div></sc-if>
+</div></header>
+<div style="flex: 1 0 auto">
+<main class="wrap">
+<sc-if value="{{denied}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="text-align: center; padding: 48px 24px; max-width: 640px; margin: 0 auto">
+<h1 class="h2">Acceso solo para Tesorería</h1>
+<p class="lead" style="margin: 0 auto 20px">Este panel solo se abre con la cuenta de Tesorería (<b>{{correoTes}}</b>).</p>
+<button class="btn" onClick="{{cambiar}}">Ingresar con la cuenta de Tesorería</button>
+</div>
+</sc-if>
+
+<sc-if value="{{allowed}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 20px">
+<div><div class="eyebrow" style="color: #C2262B">Tesorería · {{correoTes}}</div><h1 class="h1" style="margin: 4px 0 0">Validación de pagos</h1></div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px"><button class="btn-out btn-sm" onClick="{{exportar}}">Descargar facturas (CSV)</button></div>
+</div>
+
+<sc-if value="{{toast}}" hint-placeholder-val="{{ false }}"><div class="alert a-ok" role="status" style="margin-bottom: 18px">✓ {{toast}}</div></sc-if>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px">
+<div class="kpi" style="border-top: 5px solid #3A66AA"><b>{{k.porValidar}}</b><span>Pagos por validar</span><small>{{k.porValidarMonto}}</small></div>
+<div class="kpi" style="border-top: 5px solid #B98A0A"><b>{{k.pendientes}}</b><span>Facturas sin pagar</span><small>{{k.pendientesMonto}}</small></div>
+<div class="kpi" style="border-top: 5px solid #1D5A51"><b>{{k.recaudo}}</b><span>Recaudo validado · 30 días</span><small>{{k.recaudoLargo}} · {{k.validados30}} pagos</small></div>
+<div class="kpi" style="border-top: 5px solid #C2262B"><b>{{k.rechazos}}</b><span>Comprobantes rechazados</span><small>{{k.vencidas}} facturas vencidas sin pago</small></div>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 22px; margin-bottom: 24px">
+<div class="card" style="flex: 2 1 520px; min-width: 0">
+<h2 style="font-size: 18px; margin: 0 0 4px">Recaudo validado por día</h2>
+<div style="font-size: 13px; color: #5A6470">Últimos 30 días · total {{k.recaudo}}</div>
+<div class="chart" role="img" aria-label="{{chartAria}}">
+<div class="gridline" style="top: 22px"><span>{{chartMax}}</span></div>
+<sc-for list="{{chart}}" as="b" hint-placeholder-count="30"><div class="bar" style="height: {{b.h}}"><span class="tip">{{b.tip}}</span></div></sc-for>
+</div>
+<div class="chart-x"><sc-for list="{{chart}}" as="b" hint-placeholder-count="30"><span>{{b.lbl}}</span></sc-for></div>
+</div>
+<div class="card" style="flex: 1 1 300px; min-width: 0">
+<h2 style="font-size: 18px; margin: 0 0 12px">Pagos validados por medio</h2>
+<sc-for list="{{metodos}}" as="m" hint-placeholder-count="3"><div class="hbar"><span>{{m.lbl}}</span><div class="hbar-track"><div class="hbar-fill" style="width: {{m.w}}" title="{{m.tip}}"></div></div><b>{{m.n}}</b></div></sc-for>
+<sc-if value="{{sinMetodos}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; color: #5A6470">Aún no hay pagos validados.</div></sc-if>
+</div>
+</div>
+
+<div class="stickybar" role="region" aria-label="Filtros de facturas">
+<div class="filters" style="margin: 0">
+<div class="seg" role="group" aria-label="Filtrar facturas">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="4"><button aria-pressed="{{t.on}}" onClick="{{t.pick}}">{{t.lbl}} ({{t.n}})</button></sc-for>
+</div>
+<div class="field" style="flex: 1 1 260px; max-width: 380px"><label for="buscar" style="position: absolute; left: -9999px">Buscar</label><input id="buscar" placeholder="Buscar por código, factura, cliente o NIT" value="{{q}}" onInput="{{buscar}}"></div>
+</div>
+<div class="sb-now"><div class="viendo">Viendo: <b>{{viendoTxt}}</b></div></div>
+</div>
+
+<sc-if value="{{vacio}}" hint-placeholder-val="{{ false }}"><div class="card" style="text-align: center; padding: 36px; color: #4A5560">{{vacioTxt}}</div></sc-if>
+
+<div style="display: flex; flex-direction: column; gap: 14px">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="3">
+<article class="card" style="padding: 18px 22px; display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start">
+<div style="flex: 2 1 340px; min-width: 0">
+<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center"><a href="{{r.href}}" style="font-weight: 700; font-size: 16px">{{r.code}}</a><span style="color: #5A6470">· {{r.factura}}</span><span class="chip {{r.cls}}">{{r.estado}}</span><sc-if value="{{r.demo}}" hint-placeholder-val="{{ false }}"><span class="chip c-res">demo</span></sc-if></div>
+<div style="font-size: 15px; font-weight: 700; margin-top: 8px">{{r.cliente}} <span style="font-weight: 400; color: #4A5560">· {{r.doc}} · {{r.correo}}</span></div>
+<div style="font-size: 14px; color: #4A5560; margin-top: 4px">{{r.uso}}</div>
+<sc-if value="{{r.pagoTxt}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; margin-top: 8px; background: #F4F5F6; border-radius: 10px; padding: 10px 12px"><b>Pago:</b> {{r.pagoTxt}}<sc-if value="{{r.archivo}}" hint-placeholder-val="{{ false }}"> · Comprobante: <b>{{r.archivo}}</b></sc-if></div></sc-if>
+<sc-if value="{{r.verifTxt}}" hint-placeholder-val="{{ false }}"><div style="font-size: 13px; color: #1D5A51; margin-top: 6px">✓ {{r.verifTxt}}</div></sc-if>
+<sc-if value="{{r.rechTxt}}" hint-placeholder-val="{{ false }}"><div style="font-size: 13px; color: #932428; margin-top: 6px">✕ {{r.rechTxt}}</div></sc-if>
+</div>
+<div style="flex: 1 1 200px; display: flex; flex-direction: column; gap: 8px; align-items: stretch">
+<div style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 30px; text-align: right">{{r.valor}}</div>
+<sc-if value="{{r.dataUrl}}" hint-placeholder-val="{{ false }}"><a class="btn-out btn-sm" href="{{r.dataUrl}}" download="{{r.archivo}}">Descargar comprobante</a></sc-if>
+<sc-if value="{{r.canVal}}" hint-placeholder-val="{{ false }}"><button class="btn btn-sm" onClick="{{r.validar}}" style="background: #1D5A51">✓ Validar pago</button><button class="btn-out btn-sm" onClick="{{r.rechazar}}" style="border-color: #C2262B; color: #C2262B !important">Rechazar</button></sc-if>
+<sc-if value="{{r.canManual}}" hint-placeholder-val="{{ false }}"><button class="btn-out btn-sm" onClick="{{r.manual}}">Registrar pago recibido</button></sc-if>
+<a class="btn-out btn-sm" href="{{r.href}}" style="border-color: transparent">Ver detalle</a>
+</div>
+</article>
+</sc-for>
+</div>
+<sc-if value="{{hayMas}}" hint-placeholder-val="{{ false }}"><div style="text-align: center; margin-top: 18px"><button class="btn-out" onClick="{{verMas}}">Ver más ({{restantes}})</button></div></sc-if>
+</sc-if>
+
+<sc-if value="{{modal}}" hint-placeholder-val="{{ false }}">
+<div class="modal-bg" role="dialog" aria-modal="true" aria-labelledby="mt">
+<div class="modal" style="padding: 26px">
+<h2 id="mt" style="font-size: 22px; margin: 0 0 8px">{{m.titulo}}</h2>
+<p style="font-size: 15px; line-height: 23px; color: #3A4652; margin: 0 0 16px">{{m.texto}}</p>
+<div class="field {{m.errCls}}" style="margin-bottom: 18px"><label for="mtxt">{{m.label}}</label><textarea id="mtxt" style="height: 84px" placeholder="{{m.ph}}"></textarea><sc-if value="{{m.err}}" hint-placeholder-val="{{ false }}"><span class="errtxt">✕ {{m.err}}</span></sc-if></div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: flex-end"><button class="btn-out btn-sm" onClick="{{cerrarModal}}">Cancelar</button><button class="btn btn-sm" onClick="{{confirmarModal}}" style="{{m.btnStyle}}">{{m.boton}}</button></div>
+</div>
+</div>
+</sc-if>
+</main>
+</div>
+<footer class="ftr"><div class="ftr-in">
+<div><b>Bienestar Universitario · Deportes</b><br>{{contacto}}</div>
+<div><a href="ayuda.html">Ayuda y preguntas frecuentes</a><br><a href="reglamento.html">Reglamento de uso</a><br><a href="escenarios.html">Escenarios</a><br><a href="personal.html">Acceso del personal (Tesorería · Bienestar)</a></div>
+<div><b>Vigilada MinEducación</b><br>Universidad de Medellín</div>
+</div></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { tab: 'validar', q: '', modal: null, err: '', toast: '', limite: 25 }; }
+  renderVals() {
+    const U = UdeM, cm = U.comun();
+    if (!U.exigirSesion('tesoreria.html')) return cm;
+    const correoTes = U.correoPersonal('tesoreria');
+    if (!U.exigirRol('tesoreria', 'tesoreria.html')) return Object.assign(cm, { denied: true, allowed: false, correoTes, cambiar: () => { U.cerrarSesion(); U.ir('personal.html?next=tesoreria.html'); } });
+    const st = this.state, all = U.todas().filter((r) => r.factura);
+    const fmt = (t) => new Date(t).toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const DAY = 86400000, now = Date.now();
+    const validados = all.filter((r) => r.estado === 'confirmada' && r.pago && r.pago.verificado);
+    const val30 = validados.filter((r) => now - new Date(r.pago.verificado.t).getTime() <= 30 * DAY);
+    const sum = (a) => a.reduce((s, r) => s + (r.valor || 0), 0);
+    const porVal = all.filter((r) => r.estado === 'en_verificacion'), pend = all.filter((r) => r.estado === 'pendiente_pago');
+    // gráfica: recaudo por día (30 días)
+    const days = []; const d0 = new Date(); d0.setHours(0, 0, 0, 0);
+    for (let i = 29; i >= 0; i--) { const d = new Date(d0); d.setDate(d0.getDate() - i); days.push(U.isoDe(d)); }
+    const byDay = {}; val30.forEach((r) => { const k = U.isoDe(new Date(r.pago.verificado.t)); byDay[k] = (byDay[k] || 0) + r.valor; });
+    const max = Math.max(1, ...days.map((k) => byDay[k] || 0));
+    const chart = days.map((k, i) => { const v = byDay[k] || 0; return { h: (v / max * 100) + '%', tip: U.diaCorto(k) + ': ' + U.dinero(v), lbl: i % 5 === 4 || i === 29 ? U.diaCorto(k).split(' ')[1] : '' }; });
+    const mcount = {}; validados.forEach((r) => { const m = /pasarela/i.test(r.pago.metodo) || r.pago.simulado ? 'Pasarela en línea' : /Tesorería/.test(r.pago.metodo) ? 'Registrado en caja' : 'Comprobante'; mcount[m] = (mcount[m] || 0) + 1; });
+    const mmax = Math.max(1, ...Object.values(mcount));
+    const metodos = Object.keys(mcount).map((k) => ({ lbl: k, n: mcount[k], w: (mcount[k] / mmax * 100) + '%', tip: k + ': ' + mcount[k] }));
+    // filas
+    const lists = { validar: porVal, pendientes: pend, validados: validados, todas: all };
+    const q = st.q.trim().toLowerCase();
+    let list = lists[st.tab].filter((r) => !q || [r.code, r.factura.numero, r.factura.datos.razon, r.factura.datos.documento].join(' ').toLowerCase().indexOf(q) !== -1);
+    list = list.slice().sort((a, b) => st.tab === 'validar' ? (a.pago.fecha || '').localeCompare(b.pago.fecha || '') : b.creada.localeCompare(a.creada));
+    const rows = list.slice(0, st.limite).map((r) => {
+      const ev = U.estadoVisible(r), e = U.ESTADOS[ev], f = r.factura.datos;
+      const lr = (r.rechazos || []).slice(-1)[0];
+      return {
+        code: r.code, factura: r.factura.numero, estado: e.txt, cls: e.cls, demo: !!r.demo, href: 'reserva.html?c=' + r.code + '&vista=tesoreria',
+        cliente: f.razon, doc: f.tipoPersona + ' ' + f.documento, correo: f.correo, valor: U.dinero(r.valor),
+        uso: U.cancha(r.cancha).nombre + ' · ' + U.diaLargo(r.fecha) + ' · ' + U.franja(r.hora),
+        pagoTxt: r.pago ? r.pago.metodo + (r.pago.referencia ? ' · ref. ' + r.pago.referencia : '') + ' · ' + fmt(r.pago.fecha) + (r.pago.nota ? ' · “' + r.pago.nota + '”' : '') : '',
+        archivo: r.pago && r.pago.archivo ? r.pago.archivo.nombre : '', dataUrl: r.pago && r.pago.archivo && r.pago.archivo.dataUrl ? r.pago.archivo.dataUrl : '',
+        verifTxt: r.pago && r.pago.verificado ? 'Validado por ' + r.pago.verificado.por + ' · ' + fmt(r.pago.verificado.t) : '',
+        rechTxt: lr ? 'Último rechazo (' + fmt(lr.t) + '): ' + lr.motivo : '',
+        canVal: r.estado === 'en_verificacion', canManual: r.estado === 'pendiente_pago',
+        validar: () => this.setState({ modal: { code: r.code, accion: 'validar' }, err: '' }),
+        rechazar: () => this.setState({ modal: { code: r.code, accion: 'rechazar' }, err: '' }),
+        manual: () => this.setState({ modal: { code: r.code, accion: 'manual' }, err: '' })
+      };
+    });
+    const tabs = [['validar', 'Por validar', porVal.length], ['pendientes', 'Sin pagar', pend.length], ['validados', 'Validados', validados.length], ['todas', 'Todas', all.length]]
+      .map((t) => ({ lbl: t[1], n: t[2], on: st.tab === t[0], pick: () => this.setState({ tab: t[0], limite: 25 }) }));
+    const mr = st.modal ? U.reserva(st.modal.code) : null;
+    const M = mr ? {
+      validar: { titulo: 'Validar pago de ' + mr.code, texto: 'Confirmas que ingresó el pago de ' + U.dinero(mr.valor) + ' de ' + mr.factura.datos.razon + ' (factura ' + mr.factura.numero + '). La reserva quedará confirmada y el usuario verá el cambio.', label: 'Nota interna (opcional)', ph: 'Ej.: verificado en extracto bancario', boton: '✓ Validar y confirmar reserva', btnStyle: 'background: #1D5A51' },
+      rechazar: { titulo: 'Rechazar pago de ' + mr.code, texto: 'El usuario verá el motivo y tendrá 24 horas para pagar de nuevo.', label: 'Motivo del rechazo (lo verá el usuario) *', ph: 'Ej.: el valor del comprobante no coincide con la factura', boton: 'Rechazar pago', btnStyle: '' },
+      manual: { titulo: 'Registrar pago recibido · ' + mr.code, texto: 'Úsalo cuando el pago llegó por caja o transferencia sin comprobante en la plataforma. La reserva quedará confirmada.', label: 'Referencia o soporte *', ph: 'Ej.: recibo de caja 00123', boton: 'Registrar y confirmar', btnStyle: 'background: #1D5A51' }
+    }[st.modal.accion] : {};
+    return Object.assign(cm, {
+      denied: false, allowed: true, correoTes, toast: st.toast,
+      k: { porValidar: porVal.length, porValidarMonto: U.dinero(sum(porVal)), pendientes: pend.length, pendientesMonto: U.dinero(sum(pend)) + ' por cobrar',
+        recaudo: U.dineroCorto(sum(val30)), recaudoLargo: U.dinero(sum(val30)), validados30: val30.length, rechazos: all.reduce((s, r) => s + (r.rechazos || []).length, 0), vencidas: all.filter((r) => r.estado === 'vencida').length },
+      chart, chartMax: U.dinero(max).replace(' COP', ''), chartAria: 'Recaudo validado por día en los últimos 30 días, total ' + U.dinero(sum(val30)),
+      metodos, sinMetodos: metodos.length === 0, tabs, q: st.q, rows,
+      vacio: rows.length === 0, vacioTxt: st.tab === 'validar' ? 'No hay pagos por validar en este momento.' : 'No hay facturas en esta lista.',
+      hayMas: list.length > st.limite, restantes: list.length - st.limite, verMas: () => this.setState({ limite: st.limite + 25 }),
+      buscar: (e) => this.setState({ q: e.target.value }),
+      exportar: () => U.csv('facturas_' + U.hoyIso() + '.csv', [['Factura', 'Reserva', 'Cliente', 'Tipo persona', 'Documento', 'Correo', 'Cancha', 'Fecha uso', 'Hora', 'Valor', 'Estado', 'Medio de pago', 'Referencia', 'Fecha pago', 'Validado por', 'Fecha validación']]
+        .concat(all.map((r) => [r.factura.numero, r.code, r.factura.datos.razon, r.factura.datos.tipoPersona, r.factura.datos.documento, r.factura.datos.correo, U.cancha(r.cancha).nombre, r.fecha, U.franja(r.hora), r.valor, U.ESTADOS[U.estadoVisible(r)].txt.replace(/^[✓◷] /, ''), r.pago ? r.pago.metodo : '', r.pago ? r.pago.referencia || '' : '', r.pago ? r.pago.fecha : '', r.pago && r.pago.verificado ? r.pago.verificado.por : '', r.pago && r.pago.verificado ? r.pago.verificado.t : '']))),
+      modal: !!mr, m: Object.assign({ err: st.err, errCls: st.err ? 'err' : '' }, M),
+      cerrarModal: () => this.setState({ modal: null, err: '' }),
+      confirmarModal: () => {
+        const txt = (document.getElementById('mtxt') || {}).value || '';
+        const a = st.modal.accion;
+        if (a !== 'validar' && !txt.trim()) { this.setState({ err: 'Este campo es obligatorio.' }); return; }
+        if (a === 'validar') U.verificarPago(mr.code, true, txt.trim());
+        if (a === 'rechazar') U.verificarPago(mr.code, false, txt.trim());
+        if (a === 'manual') U.registrarPagoManual(mr.code, txt.trim());
+        this.setState({ modal: null, err: '', toast: (a === 'rechazar' ? 'Pago de ' + mr.code + ' rechazado.' : 'Pago de ' + mr.code + ' validado: la reserva quedó confirmada.') + ' El usuario ya puede ver el nuevo estado.' });
+      }
+    });
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recuperar contraseña · Reservas deportivas UdeM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="icon" href="assets/logo-udem.png">
+<script>window.UDEM_PORTAL = 'usuario';</script>
+<script src="assets/config.js"></script>
+<script src="assets/db.js"></script>
+<script src="assets/dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+<div class="demo">Versión de demostración · los datos se guardan solo en este navegador · los pagos son simulados</div>
+<header class="hdr"><div class="hdr-in">
+<sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a class="brand" href="index.html"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Reservas <span>Deportivas</span></b></a></sc-if><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><a class="brand" href="{{panelHref}}"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Portal del <span>personal</span></b></a></sc-if>
+<nav class="nav" aria-label="Principal"><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><sc-if value="{{showTes}}" hint-placeholder-val="{{ false }}"><a href="tesoreria.html" class="">Tesorería</a></sc-if><sc-if value="{{showBie}}" hint-placeholder-val="{{ false }}"><a href="bienestar.html" class="">Bienestar</a></sc-if><a href="personal.html" class="">Acceso del personal</a></sc-if><sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a href="reservar.html" class="">Reservar</a><a href="mis-reservas.html" class="">Mis reservas<sc-if value="{{hayNoti}}" hint-placeholder-val="{{ false }}"><span class="noti-dot" aria-label="{{nNoti}} avisos nuevos">{{nNoti}}</span></sc-if></a><a href="escenarios.html" class="">Escenarios</a><a href="ayuda.html" class="">Ayuda</a></sc-if></nav>
+<sc-if value="{{guest}}" hint-placeholder-val="{{ true }}"><div class="me"><a class="btn-out btn-sm" href="registro.html">Crear cuenta</a><a class="btn btn-sm" href="ingresar.html">Ingresar</a></div></sc-if>
+<sc-if value="{{u.logged}}" hint-placeholder-val="{{ false }}"><div class="me"><a class="chipuser" href="{{perfilHref}}" title="Mi cuenta"><i style="background: {{u.color}}">{{u.ini}}</i>{{u.nombre}} · {{u.rol}}</a><button class="linkbtn" onClick="{{salir}}" style="font-size: 14px">Salir</button></div></sc-if>
+</div></header>
+<div style="flex: 1 0 auto">
+<main class="wrap" style="max-width: 640px">
+<a href="ingresar.html" style="display: inline-flex; align-items: center; font-weight: 600; text-decoration: none; margin-bottom: 16px; min-height: 44px">← Volver a ingresar</a>
+<div class="card" style="padding: 32px">
+<sc-if value="{{form}}" hint-placeholder-val="{{ true }}">
+<h1 class="h2">Restablece tu contraseña</h1>
+<div class="alert a-info" style="font-size: 14px; margin-bottom: 18px">En esta versión sin servidor no se envían correos: puedes poner una contraseña nueva directamente. Con un servidor real, aquí se enviaría un enlace al correo.</div>
+<form onSubmit="{{send}}" novalidate="" style="display: flex; flex-direction: column; gap: 16px">
+<div class="field {{eEmail}}"><label for="email">Correo de tu cuenta</label><input id="email" type="email" value="{{email}}"><sc-if value="{{mEmail}}" hint-placeholder-val="{{ false }}"><span class="errtxt">✕ {{mEmail}}</span></sc-if></div>
+<div class="field {{eClave}}"><label for="clave">Contraseña nueva (mín. 8 caracteres)</label><input id="clave" type="password" autocomplete="new-password"><sc-if value="{{mClave}}" hint-placeholder-val="{{ false }}"><span class="errtxt">✕ {{mClave}}</span></sc-if></div>
+<button class="btn" type="submit">Guardar contraseña nueva</button>
+</form>
+</sc-if>
+<sc-if value="{{done}}" hint-placeholder-val="{{ false }}">
+<div class="alert a-ok" role="status" style="margin-bottom: 18px">✓ Listo. Ya puedes ingresar con tu contraseña nueva.</div>
+<a class="btn" href="{{ingresarHref}}">Ingresar</a>
+</sc-if>
+</div>
+</main>
+</div>
+<footer class="ftr"><div class="ftr-in">
+<div><b>Bienestar Universitario · Deportes</b><br>{{contacto}}</div>
+<div><a href="ayuda.html">Ayuda y preguntas frecuentes</a><br><a href="reglamento.html">Reglamento de uso</a><br><a href="escenarios.html">Escenarios</a><br><a href="personal.html">Acceso del personal (Tesorería · Bienestar)</a></div>
+<div><b>Vigilada MinEducación</b><br>Universidad de Medellín</div>
+</div></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { email: '', err: {}, done: false }; }
+  renderVals() {
+    const U = UdeM, st = this.state;
+    return Object.assign(U.comun(), {
+      form: !st.done, done: st.done, email: st.email, ingresarHref: 'ingresar.html?email=' + encodeURIComponent(st.email),
+      eEmail: st.err.email ? 'err' : '', eClave: st.err.clave ? 'err' : '', mEmail: st.err.email || '', mClave: st.err.clave || '',
+      send: (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value.trim();
+        const r = U.restablecer(email, document.getElementById('clave').value);
+        this.setState({ email, err: r.ok ? {} : r.err, done: r.ok });
+      }
+    });
+  }
+}
+</script>
+</body>
+</html>

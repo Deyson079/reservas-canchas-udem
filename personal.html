@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acceso del personal · Reservas deportivas UdeM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="icon" href="assets/logo-udem.png">
+<script>window.UDEM_PORTAL = 'personal';</script>
+<script src="assets/config.js"></script>
+<script src="assets/db.js"></script>
+<script src="assets/dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+<div class="demo">Versión de demostración · los datos se guardan solo en este navegador · los pagos son simulados</div>
+<header class="hdr"><div class="hdr-in">
+<sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a class="brand" href="index.html"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Reservas <span>Deportivas</span></b></a></sc-if><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><a class="brand" href="{{panelHref}}"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Portal del <span>personal</span></b></a></sc-if>
+<nav class="nav" aria-label="Principal"><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><sc-if value="{{showTes}}" hint-placeholder-val="{{ false }}"><a href="tesoreria.html" class="">Tesorería</a></sc-if><sc-if value="{{showBie}}" hint-placeholder-val="{{ false }}"><a href="bienestar.html" class="">Bienestar</a></sc-if><a href="personal.html" class="on">Acceso del personal</a></sc-if><sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a href="reservar.html" class="">Reservar</a><a href="mis-reservas.html" class="">Mis reservas<sc-if value="{{hayNoti}}" hint-placeholder-val="{{ false }}"><span class="noti-dot" aria-label="{{nNoti}} avisos nuevos">{{nNoti}}</span></sc-if></a><a href="escenarios.html" class="">Escenarios</a><a href="ayuda.html" class="">Ayuda</a></sc-if></nav>
+<sc-if value="{{guest}}" hint-placeholder-val="{{ true }}"><div class="me"><a class="btn-out btn-sm" href="registro.html">Crear cuenta</a><a class="btn btn-sm" href="ingresar.html">Ingresar</a></div></sc-if>
+<sc-if value="{{u.logged}}" hint-placeholder-val="{{ false }}"><div class="me"><a class="chipuser" href="{{perfilHref}}" title="Mi cuenta"><i style="background: {{u.color}}">{{u.ini}}</i>{{u.nombre}} · {{u.rol}}</a><button class="linkbtn" onClick="{{salir}}" style="font-size: 14px">Salir</button></div></sc-if>
+</div></header>
+<div style="flex: 1 0 auto">
+<main class="wrap" style="max-width: 1120px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 18px; margin-bottom: 8px">
+<img src="assets/logo-udem.png" alt="Universidad de Medellín" style="height: 52px; width: auto">
+<div><div class="eyebrow" style="color: #C2262B">Portal del personal</div><h1 class="h1" style="margin: 2px 0 0">Acceso del personal</h1></div>
+</div>
+<p class="lead">Tesorería y Bienestar tienen <b>sesiones independientes</b>: puedes ingresar a las dos en este mismo navegador y tener ambos paneles abiertos a la par, cada uno en su pestaña. Trabajan sobre las mismas reservas, así que lo que valida Tesorería lo ve Bienestar (y el usuario) al instante. ¿Eres usuario? <a href="ingresar.html" style="font-weight: 700">Ingresa aquí</a>.</p>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 24px">
+<sc-for list="{{roles}}" as="r" hint-placeholder-count="2">
+<section class="card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column">
+<div style="background: {{r.color}}; color: #FFFFFF; padding: 22px 26px">
+<div style="font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; opacity: .9">{{r.sub}}</div>
+<h2 class="h2" style="color: #FFFFFF; margin: 4px 0 6px">{{r.titulo}}</h2>
+<div style="font-size: 15px; line-height: 23px">{{r.desc}}</div>
+</div>
+<div style="padding: 24px 26px; display: flex; flex-direction: column; gap: 16px; flex: 1 1 auto">
+<sc-if value="{{r.abierta}}" hint-placeholder-val="{{ false }}">
+<div class="alert a-ok" role="status"><div><b>✓ Sesión abierta</b> · {{r.email}}</div></div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px">
+<a class="btn" href="{{r.href}}" style="background: {{r.color}}">Abrir panel</a>
+<a class="btn-out" href="{{r.href}}" target="_blank" rel="noopener">Abrir en otra pestaña</a>
+<button class="btn-out" onClick="{{r.salir}}" style="border-color: #C2262B; color: #C2262B !important">Cerrar sesión</button>
+</div>
+</sc-if>
+<sc-if value="{{r.cerrada}}" hint-placeholder-val="{{ true }}">
+<sc-if value="{{r.error}}" hint-placeholder-val="{{ false }}"><div class="alert a-err" role="alert">{{r.error}}</div></sc-if>
+<form onSubmit="{{r.entrar}}" novalidate="" style="display: flex; flex-direction: column; gap: 14px">
+<div class="field"><label for="{{r.idEmail}}">Correo institucional</label><input id="{{r.idEmail}}" type="email" autocomplete="username" value="{{r.email}}"></div>
+<div class="field {{r.errCls}}"><label for="{{r.idClave}}">Contraseña</label><input id="{{r.idClave}}" type="password" autocomplete="current-password"></div>
+<button class="btn" type="submit" style="background: {{r.color}}">Ingresar a {{r.titulo}}</button>
+</form>
+<div style="font-size: 13px; color: #5A6470">Contraseña de prueba: <code>{{r.clave}}</code> · cámbiala en assets/config.js antes de compartir el enlace.</div>
+</sc-if>
+</div>
+</section>
+</sc-for>
+</div>
+</main>
+</div>
+<footer class="ftr"><div class="ftr-in">
+<div><b>Bienestar Universitario · Deportes</b><br>{{contacto}}</div>
+<div><a href="ayuda.html">Ayuda y preguntas frecuentes</a><br><a href="reglamento.html">Reglamento de uso</a><br><a href="escenarios.html">Escenarios</a><br><a href="personal.html">Acceso del personal (Tesorería · Bienestar)</a></div>
+<div><b>Vigilada MinEducación</b><br>Universidad de Medellín</div>
+</div></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { err: {} }; }
+  renderVals() {
+    const U = UdeM, cm = U.comun(), st = this.state;
+    const meta = {
+      tesoreria: { titulo: 'Tesorería', sub: 'Validación de pagos', color: '#1D5A51', desc: 'Valida o rechaza los pagos de los usuarios externos. Al aprobar, la reserva queda confirmada y el usuario recibe el aviso.' },
+      bienestar: { titulo: 'Bienestar Universitario', sub: 'Control de reservas', color: '#2B445F', desc: 'Indicadores, gráficas, lista y detalle de todas las reservas, cancelaciones, asistencia y estado de las canchas.' }
+    };
+    const next = U.q('next') || '';
+    const roles = U.CFG.personal.filter((p) => meta[p.rol]).map((p) => {
+      const m = meta[p.rol], ses = U.sesionDe(p.rol), panel = p.rol + '.html', e = st.err[p.rol];
+      return Object.assign({}, m, {
+        abierta: !!ses, cerrada: !ses, email: p.email, clave: p.clave, href: panel,
+        idEmail: 'email-' + p.rol, idClave: 'clave-' + p.rol, error: e || '', errCls: e ? 'err' : '',
+        salir: () => { U.cerrarSesionDe(p.rol); this.forceUpdate(); },
+        entrar: (ev) => {
+          ev.preventDefault();
+          const email = document.getElementById('email-' + p.rol).value.trim().toLowerCase();
+          if (email !== p.email.toLowerCase()) { this.setState({ err: Object.assign({}, st.err, { [p.rol]: 'Este ingreso es solo para ' + p.email + '.' }) }); return; }
+          const r = U.ingresar(email, document.getElementById('clave-' + p.rol).value, 'personal');
+          if (!r.ok) { this.setState({ err: Object.assign({}, st.err, { [p.rol]: r.err.email || r.err.clave }) }); return; }
+          const e2 = Object.assign({}, st.err); delete e2[p.rol];
+          const vista = /vista=(tesoreria|bienestar)/.exec(next);
+          if (next && (next.indexOf(panel) === 0 || (vista && vista[1] === p.rol))) { U.ir(next); return; }
+          this.setState({ err: e2 });
+        }
+      });
+    });
+    return Object.assign(cm, { roles });
+  }
+}
+</script>
+</body>
+</html>

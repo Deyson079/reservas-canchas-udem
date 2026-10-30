@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mi perfil · Reservas deportivas UdeM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="icon" href="assets/logo-udem.png">
+<script>window.UDEM_PORTAL = 'usuario';</script>
+<script src="assets/config.js"></script>
+<script src="assets/db.js"></script>
+<script src="assets/dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+<div class="demo">Versión de demostración · los datos se guardan solo en este navegador · los pagos son simulados</div>
+<header class="hdr"><div class="hdr-in">
+<sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a class="brand" href="index.html"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Reservas <span>Deportivas</span></b></a></sc-if><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><a class="brand" href="{{panelHref}}"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Portal del <span>personal</span></b></a></sc-if>
+<nav class="nav" aria-label="Principal"><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><sc-if value="{{showTes}}" hint-placeholder-val="{{ false }}"><a href="tesoreria.html" class="">Tesorería</a></sc-if><sc-if value="{{showBie}}" hint-placeholder-val="{{ false }}"><a href="bienestar.html" class="">Bienestar</a></sc-if><a href="personal.html" class="">Acceso del personal</a></sc-if><sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a href="reservar.html" class="">Reservar</a><a href="mis-reservas.html" class="">Mis reservas<sc-if value="{{hayNoti}}" hint-placeholder-val="{{ false }}"><span class="noti-dot" aria-label="{{nNoti}} avisos nuevos">{{nNoti}}</span></sc-if></a><a href="escenarios.html" class="">Escenarios</a><a href="ayuda.html" class="">Ayuda</a></sc-if></nav>
+<sc-if value="{{guest}}" hint-placeholder-val="{{ true }}"><div class="me"><a class="btn-out btn-sm" href="registro.html">Crear cuenta</a><a class="btn btn-sm" href="ingresar.html">Ingresar</a></div></sc-if>
+<sc-if value="{{u.logged}}" hint-placeholder-val="{{ false }}"><div class="me"><a class="chipuser" href="{{perfilHref}}" title="Mi cuenta"><i style="background: {{u.color}}">{{u.ini}}</i>{{u.nombre}} · {{u.rol}}</a><button class="linkbtn" onClick="{{salir}}" style="font-size: 14px">Salir</button></div></sc-if>
+</div></header>
+<div style="flex: 1 0 auto">
+<main class="wrap" style="max-width: 980px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 18px; margin-bottom: 24px">
+<span style="width: 72px; height: 72px; border-radius: 50%; background: {{u.color}}; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 24px">{{u.ini}}</span>
+<div style="flex: 1 1 240px"><h1 class="h1" style="font-size: 42px; margin: 0">{{me.nombre}}</h1><div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px"><span class="badge {{badgeCls}}">{{u.rol}}</span><span style="font-size: 14px; color: #4A5560">{{me.email}}</span></div></div>
+<button class="btn-out btn-sm" onClick="{{salir}}">Cerrar sesión</button>
+</div>
+<sc-if value="{{saved}}" hint-placeholder-val="{{ false }}"><div class="alert a-ok" role="status" style="margin-bottom: 18px">✓ {{saved}}</div></sc-if>
+
+<sc-if value="{{isUser}}" hint-placeholder-val="{{ true }}">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 22px">
+<a href="mis-reservas.html" class="card" style="text-decoration: none; color: #16222F"><div style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 44px; color: #C2262B; line-height: 1">{{nAct}}</div><div style="font-weight: 700; margin-top: 6px">Reservas próximas</div></a>
+<sc-if value="{{u.externo}}" hint-placeholder-val="{{ false }}"><a href="mis-reservas.html" class="card" style="text-decoration: none; color: #16222F"><div style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 44px; color: #B98A0A; line-height: 1">{{nPend}}</div><div style="font-weight: 700; margin-top: 6px">Pendientes de pago</div></a></sc-if>
+<a href="reservar.html" class="card" style="text-decoration: none; color: #16222F"><div style="font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 44px; color: #1D5A51; line-height: 1">+</div><div style="font-weight: 700; margin-top: 6px">Nueva reserva</div></a>
+</div>
+</sc-if>
+
+<div class="card" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px">
+<h2 style="font-size: 20px; margin: 0">Datos personales</h2>
+<div class="grid2">
+<div class="field"><label for="nombre">Nombre</label><input id="nombre" value="{{me.nombre}}"></div>
+<div class="field"><label>Correo (no se puede cambiar)</label><input value="{{me.email}}" disabled="{{ true }}" style="background: #F4F5F6"></div>
+</div>
+<sc-if value="{{u.interno}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; color: #4A5560">Tu correo es institucional: tus reservas no tienen costo.</div></sc-if>
+<div><button class="btn btn-sm" onClick="{{saveNombre}}">Guardar</button></div>
+</div>
+
+<sc-if value="{{u.externo}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px">
+<h2 style="font-size: 20px; margin: 0">Datos de facturación</h2>
+<div class="grid2">
+<div class="field"><label for="tipoPersona">Tipo de persona</label><select id="tipoPersona"><option selected="{{pn}}">Persona natural</option><option selected="{{pj}}">Persona jurídica</option></select></div>
+<div class="field {{e.documento}}"><label for="documento">NIT o cédula</label><input id="documento" value="{{fa.documento}}"></div>
+<div class="field {{e.razon}}"><label for="razon">Nombre o razón social</label><input id="razon" value="{{fa.razon}}"></div>
+<div class="field {{e.correo}}"><label for="correo">Correo para la factura</label><input id="correo" type="email" value="{{fa.correo}}"></div>
+<div class="field {{e.telefono}}"><label for="telefono">Teléfono</label><input id="telefono" value="{{fa.telefono}}"></div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; font-size: 14px">RUT: <b>{{rutTxt}}</b>
+<label class="btn-out btn-sm" style="cursor: pointer">{{rutBtn}}<input type="file" accept="application/pdf" onChange="{{onRut}}" style="display: none"></label></div>
+<sc-if value="{{errFact}}" hint-placeholder-val="{{ false }}"><div class="errtxt">✕ {{errFact}}</div></sc-if>
+<div><button class="btn btn-sm" onClick="{{saveFact}}">Guardar datos de facturación</button></div>
+<div style="font-size: 13px; color: #5A6470">Los cambios aplican a las facturas nuevas; las ya emitidas no cambian.</div>
+</div>
+</sc-if>
+
+<div class="card" style="display: flex; flex-direction: column; gap: 16px">
+<h2 style="font-size: 20px; margin: 0">Cambiar contraseña</h2>
+<div class="grid2">
+<div class="field {{e.actual}}"><label for="actual">Contraseña actual</label><input id="actual" type="password" autocomplete="current-password"></div>
+<div class="field {{e.nueva}}"><label for="nueva">Contraseña nueva (mín. 8)</label><input id="nueva" type="password" autocomplete="new-password"></div>
+</div>
+<sc-if value="{{errClave}}" hint-placeholder-val="{{ false }}"><div class="errtxt">✕ {{errClave}}</div></sc-if>
+<div><button class="btn btn-sm" onClick="{{saveClave}}">Cambiar contraseña</button></div>
+</div>
+</main>
+</div>
+<footer class="ftr"><div class="ftr-in">
+<div><b>Bienestar Universitario · Deportes</b><br>{{contacto}}</div>
+<div><a href="ayuda.html">Ayuda y preguntas frecuentes</a><br><a href="reglamento.html">Reglamento de uso</a><br><a href="escenarios.html">Escenarios</a><br><a href="personal.html">Acceso del personal (Tesorería · Bienestar)</a></div>
+<div><b>Vigilada MinEducación</b><br>Universidad de Medellín</div>
+</div></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { saved: '', err: {}, errFact: '', errClave: '' }; }
+  renderVals() {
+    const U = UdeM, cm = U.comun();
+    if (!U.exigirSesion('perfil.html')) return cm;
+    const me = U.usuarioActual(), fa = me.facturacion || {}, st = this.state;
+    const mine = U.misReservas().map((r) => U.estadoVisible(r));
+    const e = {}; Object.keys(st.err).forEach((k) => { e[k] = 'err'; });
+    const v = (id) => (document.getElementById(id) || {}).value || '';
+    return Object.assign(cm, {
+      me, fa, e, saved: st.saved, errFact: st.errFact, errClave: st.errClave, isUser: me.rol === 'usuario',
+      badgeCls: me.tipo === 'interno' ? 'b-inst' : 'b-ext',
+      nAct: mine.filter((x) => ['confirmada', 'pendiente_pago', 'en_verificacion'].indexOf(x) !== -1).length,
+      nPend: mine.filter((x) => x === 'pendiente_pago').length,
+      pn: fa.tipoPersona !== 'Persona jurídica', pj: fa.tipoPersona === 'Persona jurídica',
+      rutTxt: fa.rut ? fa.rut.nombre : 'sin cargar', rutBtn: fa.rut ? 'Reemplazar RUT' : 'Cargar RUT (PDF)',
+      saveNombre: () => { const n = v('nombre').trim(); if (!n) return; U.actualizarUsuario({ nombre: n }); this.setState({ saved: 'Nombre actualizado.' }); },
+      saveFact: () => {
+        const nf = Object.assign({}, fa, { tipoPersona: v('tipoPersona'), documento: v('documento').trim(), razon: v('razon').trim(), correo: v('correo').trim(), telefono: v('telefono').trim() });
+        const err = {}; if (!nf.documento) err.documento = 1; if (!nf.razon) err.razon = 1; if (!U.EMAIL_RE.test(nf.correo)) err.correo = 1; if (!/^[0-9 +()-]{7,}$/.test(nf.telefono)) err.telefono = 1;
+        if (Object.keys(err).length) { this.setState({ err, errFact: 'Revisa los campos marcados.', saved: '' }); return; }
+        U.actualizarUsuario({ facturacion: nf }); this.setState({ err: {}, errFact: '', saved: 'Datos de facturación guardados.' });
+      },
+      onRut: (ev) => {
+        const f = ev.target.files && ev.target.files[0]; if (!f) return;
+        if (f.size > 2 * 1024 * 1024 || !/\.pdf$/i.test(f.name)) { this.setState({ errFact: 'El RUT debe ser un PDF de máximo 2 MB.' }); return; }
+        const done = (d) => { U.actualizarUsuario({ facturacion: Object.assign({}, me.facturacion, { rut: { nombre: f.name, size: f.size, fecha: new Date().toISOString(), dataUrl: d } }) }); this.setState({ saved: 'RUT cargado.', errFact: '' }); };
+        if (f.size <= 400 * 1024) { const rd = new FileReader(); rd.onload = () => done(rd.result); rd.readAsDataURL(f); } else done(null);
+      },
+      saveClave: () => {
+        const r = U.cambiarClave(v('actual'), v('nueva'));
+        if (!r.ok) { this.setState({ err: r.err, errClave: r.err.actual || r.err.nueva, saved: '' }); return; }
+        this.setState({ err: {}, errClave: '', saved: 'Contraseña actualizada.' });
+      }
+    });
+  }
+}
+</script>
+</body>
+</html>

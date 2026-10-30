@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crear cuenta · Reservas deportivas UdeM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="icon" href="assets/logo-udem.png">
+<script>window.UDEM_PORTAL = 'usuario';</script>
+<script src="assets/config.js"></script>
+<script src="assets/db.js"></script>
+<script src="assets/dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+<div class="demo">Versión de demostración · los datos se guardan solo en este navegador · los pagos son simulados</div>
+<header class="hdr"><div class="hdr-in">
+<sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a class="brand" href="index.html"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Reservas <span>Deportivas</span></b></a></sc-if><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><a class="brand" href="{{panelHref}}"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Portal del <span>personal</span></b></a></sc-if>
+<nav class="nav" aria-label="Principal"><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><sc-if value="{{showTes}}" hint-placeholder-val="{{ false }}"><a href="tesoreria.html" class="">Tesorería</a></sc-if><sc-if value="{{showBie}}" hint-placeholder-val="{{ false }}"><a href="bienestar.html" class="">Bienestar</a></sc-if><a href="personal.html" class="">Acceso del personal</a></sc-if><sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a href="reservar.html" class="">Reservar</a><a href="mis-reservas.html" class="">Mis reservas<sc-if value="{{hayNoti}}" hint-placeholder-val="{{ false }}"><span class="noti-dot" aria-label="{{nNoti}} avisos nuevos">{{nNoti}}</span></sc-if></a><a href="escenarios.html" class="">Escenarios</a><a href="ayuda.html" class="">Ayuda</a></sc-if></nav>
+<sc-if value="{{guest}}" hint-placeholder-val="{{ true }}"><div class="me"><a class="btn-out btn-sm" href="registro.html">Crear cuenta</a><a class="btn btn-sm" href="ingresar.html">Ingresar</a></div></sc-if>
+<sc-if value="{{u.logged}}" hint-placeholder-val="{{ false }}"><div class="me"><a class="chipuser" href="{{perfilHref}}" title="Mi cuenta"><i style="background: {{u.color}}">{{u.ini}}</i>{{u.nombre}} · {{u.rol}}</a><button class="linkbtn" onClick="{{salir}}" style="font-size: 14px">Salir</button></div></sc-if>
+</div></header>
+<div style="flex: 1 0 auto">
+<main class="wrap" style="max-width: 900px">
+<h1 class="h1">Crea tu cuenta</h1>
+<p class="lead">Escribe tu correo primero: si es <b>@udemedellin.edu.co</b> o <b>@soyudemedellin.edu.co</b> quedas como comunidad UdeM (sin pagos). Con cualquier otro correo quedas como usuario externo y te pedimos los datos de facturación. ¿Ya tienes cuenta? <a href="{{ingresarHref}}" style="font-weight: 700">Ingresa</a>.</p>
+
+<sc-if value="{{hasErr}}" hint-placeholder-val="{{ false }}"><div class="alert a-err" role="alert" style="margin-bottom: 18px"><div><b>Revisa los campos marcados:</b> {{errList}}</div></div></sc-if>
+
+<form onSubmit="{{submit}}" novalidate="" style="display: flex; flex-direction: column; gap: 22px">
+<fieldset class="card" style="margin: 0; display: flex; flex-direction: column; gap: 18px">
+<legend class="eyebrow" style="padding: 0 6px">Tu cuenta</legend>
+<div class="field {{e.email}}"><label for="email">Correo electrónico *</label><input id="email" type="email" autocomplete="email" value="{{f.email}}" onInput="{{onEmail}}" placeholder="nombre@correo.com"><sc-if value="{{e.email}}" hint-placeholder-val="{{ false }}"><span class="errtxt">✕ {{m.email}}</span></sc-if></div>
+<sc-if value="{{valid}}" hint-placeholder-val="{{ false }}">
+<div class="alert {{tipoCls}}" style="margin-top: -6px"><div><b>{{tipoTitulo}}</b><br>{{tipoTexto}}</div></div>
+</sc-if>
+<div class="field {{e.nombre}}"><label for="nombre">{{nombreLabel}} *</label><input id="nombre" autocomplete="name" value="{{f.nombre}}" onInput="{{set.nombre}}"><sc-if value="{{e.nombre}}" hint-placeholder-val="{{ false }}"><span class="errtxt">✕ {{m.nombre}}</span></sc-if></div>
+<div class="grid2">
+<div class="field {{e.clave}}"><label for="clave">Contraseña * <span style="font-weight: 400; color: #5A6470">(mín. 8 caracteres)</span></label><input id="clave" type="password" autocomplete="new-password" value="{{f.clave}}" onInput="{{set.clave}}"><sc-if value="{{e.clave}}" hint-placeholder-val="{{ false }}"><span class="errtxt">✕ {{m.clave}}</span></sc-if></div>
+<div class="field {{e.clave2}}"><label for="clave2">Repite la contraseña *</label><input id="clave2" type="password" autocomplete="new-password" value="{{f.clave2}}" onInput="{{set.clave2}}"><sc-if value="{{e.clave2}}" hint-placeholder-val="{{ false }}"><span class="errtxt">✕ {{m.clave2}}</span></sc-if></div>
+</div>
+</fieldset>
+
+<sc-if value="{{externo}}" hint-placeholder-val="{{ false }}">
+<fieldset class="card" style="margin: 0; display: flex; flex-direction: column; gap: 18px">
+<legend class="eyebrow" style="padding: 0 6px">Datos de facturación · usuario externo</legend>
+<div class="alert a-info" style="font-size: 14px">Con estos datos se genera automáticamente la factura de cada reserva ({{tarifa}} por hora). El RUT en PDF lo cargas en tu primera reserva o en tu perfil.</div>
+<div class="grid2">
+<div class="field"><label for="tipoPersona">Tipo de persona *</label><select id="tipoPersona" onChange="{{set.tipoPersona}}"><option selected="{{pn}}">Persona natural</option><option selected="{{pj}}">Persona jurídica</option></select></div>
+<div class="field {{e.documento}}"><label for="documento">{{docLabel}} *</label><input id="documento" value="{{f.documento}}" onInput="{{set.documento}}"><sc-if value="{{e.documento}}" hint-placeholder-val="{{ false }}"><span class="errtxt">✕ {{m.documento}}</span></sc-if></div>
+<div class="field {{e.razon}}"><label for="razon">{{razonLabel}} *</label><input id="razon" value="{{f.razon}}" onInput="{{set.razon}}"><sc-if value="{{e.razon}}" hint-placeholder-val="{{ false }}"><span class="errtxt">✕ {{m.razon}}</span></sc-if></div>
+<div class="field {{e.telefono}}"><label for="telefono">Teléfono *</label><input id="telefono" type="tel" value="{{f.telefono}}" onInput="{{set.telefono}}"><sc-if value="{{e.telefono}}" hint-placeholder-val="{{ false }}"><span class="errtxt">✕ {{m.telefono}}</span></sc-if></div>
+<div class="field"><label for="correoFactura">Correo para la factura <span style="font-weight: 400; color: #5A6470">(si es distinto)</span></label><input id="correoFactura" type="email" value="{{f.correoFactura}}" onInput="{{set.correoFactura}}"></div>
+</div>
+</fieldset>
+</sc-if>
+
+<div class="card" style="display: flex; flex-direction: column; gap: 10px">
+<label style="display: flex; gap: 12px; align-items: center; font-size: 15px; min-height: 44px"><input id="acepta" type="checkbox" checked="{{f.acepta}}" onChange="{{setAcepta}}" style="width: 22px; height: 22px; accent-color: #C2262B">Autorizo el tratamiento de mis datos personales [política de la universidad por enlazar]</label>
+<sc-if value="{{e.acepta}}" hint-placeholder-val="{{ false }}"><span class="errtxt">✕ {{m.acepta}}</span></sc-if>
+</div>
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 14px">
+<a class="btn-out" href="{{ingresarHref}}">Ya tengo cuenta</a>
+<button class="btn" type="submit" style="font-size: 17px">Crear cuenta →</button>
+</div>
+</form>
+</main>
+</div>
+<footer class="ftr"><div class="ftr-in">
+<div><b>Bienestar Universitario · Deportes</b><br>{{contacto}}</div>
+<div><a href="ayuda.html">Ayuda y preguntas frecuentes</a><br><a href="reglamento.html">Reglamento de uso</a><br><a href="escenarios.html">Escenarios</a><br><a href="personal.html">Acceso del personal (Tesorería · Bienestar)</a></div>
+<div><b>Vigilada MinEducación</b><br>Universidad de Medellín</div>
+</div></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { f: { email: UdeM.q('email') || '', nombre: '', clave: '', clave2: '', tipoPersona: 'Persona natural', documento: '', razon: '', telefono: '', correoFactura: '', acepta: false }, err: {} };
+  }
+  renderVals() {
+    const U = UdeM, cm = U.comun(), f = this.state.f, err = this.state.err;
+    const em = f.email.trim(), valid = U.EMAIL_RE.test(em), inst = valid && U.esInstitucional(em);
+    const e = {}; Object.keys(err).forEach((k) => { e[k] = 'err'; });
+    const names = { email: 'correo', nombre: 'nombre', clave: 'contraseña', clave2: 'confirmación de contraseña', documento: 'documento', razon: 'nombre o razón social', telefono: 'teléfono', acepta: 'autorización de datos' };
+    const set = {};
+    ['nombre', 'clave', 'clave2', 'documento', 'razon', 'telefono', 'correoFactura'].forEach((k) => { set[k] = (ev) => { f[k] = ev.target.value; }; });
+    set.tipoPersona = (ev) => { f.tipoPersona = ev.target.value; this.forceUpdate(); };
+    const pj = f.tipoPersona === 'Persona jurídica';
+    const next = U.q('next');
+    return Object.assign(cm, {
+      f, e, m: err, set, valid, externo: valid && !inst,
+      hasErr: Object.keys(err).length > 0, errList: Object.keys(err).map((k) => names[k]).join(', '),
+      tipoCls: inst ? 'a-ok' : 'a-warn',
+      tipoTitulo: inst ? '✓ Correo institucional: cuenta de comunidad UdeM' : 'Correo externo: cuenta de usuario externo',
+      tipoTexto: inst ? 'Tus reservas no tienen costo y quedan confirmadas al instante.' : 'Tus reservas generan una factura y se confirman cuando se aprueba el pago. ¿Eres de la universidad? Usa tu correo @udemedellin.edu.co o @soyudemedellin.edu.co.',
+      nombreLabel: inst || !valid ? 'Nombre completo' : 'Nombre de la persona de contacto',
+      pn: !pj, pj, docLabel: pj ? 'NIT' : 'Cédula', razonLabel: pj ? 'Razón social' : 'Nombre para la factura',
+      tarifa: U.dinero(U.CFG.tarifaExternosHora),
+      ingresarHref: 'ingresar.html' + (next ? '?next=' + encodeURIComponent(next) : ''),
+      onEmail: (ev) => { f.email = ev.target.value; this.setState({ err: {} }); },
+      setAcepta: (ev) => { f.acepta = ev.target.checked; },
+      submit: (ev) => {
+        ev.preventDefault();
+        const r = U.registrar(f);
+        if (!r.ok) { this.setState({ err: r.err }); window.scrollTo(0, 0); return; }
+        U.ir((next || 'reservar.html') + ((next || '').indexOf('?') === -1 ? '?' : '&') + 'bienvenida=1');
+      }
+    });
+  }
+}
+</script>
+</body>
+</html>

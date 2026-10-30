@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel de Bienestar · Reservas deportivas UdeM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="icon" href="assets/logo-udem.png">
+<script>window.UDEM_PORTAL = 'bienestar';</script>
+<script src="assets/config.js"></script>
+<script src="assets/db.js"></script>
+<script src="assets/dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+<div class="demo">Versión de demostración · los datos se guardan solo en este navegador · los pagos son simulados</div>
+<header class="hdr"><div class="hdr-in">
+<sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a class="brand" href="index.html"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Reservas <span>Deportivas</span></b></a></sc-if><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><a class="brand" href="{{panelHref}}"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Portal del <span>personal</span></b></a></sc-if>
+<nav class="nav" aria-label="Principal"><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><sc-if value="{{showTes}}" hint-placeholder-val="{{ false }}"><a href="tesoreria.html" class="">Tesorería</a></sc-if><sc-if value="{{showBie}}" hint-placeholder-val="{{ false }}"><a href="bienestar.html" class="on">Bienestar</a></sc-if><a href="personal.html" class="">Acceso del personal</a></sc-if><sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a href="reservar.html" class="">Reservar</a><a href="mis-reservas.html" class="">Mis reservas<sc-if value="{{hayNoti}}" hint-placeholder-val="{{ false }}"><span class="noti-dot" aria-label="{{nNoti}} avisos nuevos">{{nNoti}}</span></sc-if></a><a href="escenarios.html" class="">Escenarios</a><a href="ayuda.html" class="">Ayuda</a></sc-if></nav>
+<sc-if value="{{guest}}" hint-placeholder-val="{{ true }}"><div class="me"><a class="btn-out btn-sm" href="registro.html">Crear cuenta</a><a class="btn btn-sm" href="ingresar.html">Ingresar</a></div></sc-if>
+<sc-if value="{{u.logged}}" hint-placeholder-val="{{ false }}"><div class="me"><a class="chipuser" href="{{perfilHref}}" title="Mi cuenta"><i style="background: {{u.color}}">{{u.ini}}</i>{{u.nombre}} · {{u.rol}}</a><button class="linkbtn" onClick="{{salir}}" style="font-size: 14px">Salir</button></div></sc-if>
+</div></header>
+<div style="flex: 1 0 auto">
+<main class="wrap">
+<sc-if value="{{denied}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="text-align: center; padding: 48px 24px; max-width: 640px; margin: 0 auto">
+<h1 class="h2">Acceso solo para Bienestar</h1>
+<p class="lead" style="margin: 0 auto 20px">Este panel solo se abre con la cuenta de Bienestar Universitario (<b>{{correoBie}}</b>).</p>
+<button class="btn" onClick="{{cambiar}}">Ingresar con la cuenta de Bienestar</button>
+</div>
+</sc-if>
+
+<sc-if value="{{allowed}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 18px">
+<div><div class="eyebrow" style="color: #C2262B">Bienestar Universitario · Deportes · {{correoBie}}</div><h1 class="h1" style="margin: 4px 0 0">Control de reservas</h1></div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px">
+<button class="btn-out btn-sm" onClick="{{exportar}}">Descargar reservas (CSV)</button>
+<sc-if value="{{sinDemo}}" hint-placeholder-val="{{ true }}"><button class="btn-out btn-sm" onClick="{{cargarDemo}}">Cargar datos de ejemplo</button></sc-if>
+<sc-if value="{{conDemo}}" hint-placeholder-val="{{ false }}"><button class="btn-out btn-sm" onClick="{{quitarDemo}}">Quitar datos de ejemplo</button></sc-if>
+</div>
+</div>
+
+<sc-if value="{{toast}}" hint-placeholder-val="{{ false }}"><div class="alert a-ok" role="status" style="margin-bottom: 18px">✓ {{toast}}</div></sc-if>
+<sc-if value="{{nada}}" hint-placeholder-val="{{ false }}"><div class="alert a-info" style="margin-bottom: 18px; flex-wrap: wrap; align-items: center"><span style="flex: 1 1 300px">Todavía no hay reservas registradas en este navegador. Puedes cargar datos de ejemplo para ver cómo se comportan los indicadores.</span><button class="btn btn-sm" onClick="{{cargarDemo}}">Cargar datos de ejemplo</button></div></sc-if>
+
+<div class="stickybar" role="region" aria-label="Filtros del panel">
+<div class="filters" style="margin: 0">
+<div class="seg" role="group" aria-label="Periodo"><sc-for list="{{fPer}}" as="o" hint-placeholder-count="4"><button aria-pressed="{{o.on}}" onClick="{{o.pick}}">{{o.lbl}}</button></sc-for></div>
+<div class="seg" role="group" aria-label="Cancha"><sc-for list="{{fCan}}" as="o" hint-placeholder-count="4"><button aria-pressed="{{o.on}}" onClick="{{o.pick}}">{{o.lbl}}</button></sc-for></div>
+<div class="seg" role="group" aria-label="Tipo de usuario"><sc-for list="{{fTip}}" as="o" hint-placeholder-count="3"><button aria-pressed="{{o.on}}" onClick="{{o.pick}}">{{o.lbl}}</button></sc-for></div>
+</div>
+<div class="sb-now"><div class="viendo">Viendo: <b>{{viendoTxt}}</b> · {{rangoTxt}}</div></div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-bottom: 24px">
+<div class="kpi" style="border-top: 5px solid #2B445F"><b>{{k.reservas}}</b><span>Reservas</span><small>{{k.reservasSub}}</small></div>
+<div class="kpi" style="border-top: 5px solid #3A66AA"><b>{{k.ocupacion}}</b><span>Ocupación de franjas</span><small>{{k.ocupacionSub}}</small></div>
+<div class="kpi" style="border-top: 5px solid #1D5A51"><b>{{k.ingresos}}</b><span>Ingresos validados</span><small>{{k.ingresosSub}}</small></div>
+<div class="kpi" style="border-top: 5px solid #B98A0A"><b>{{k.participantes}}</b><span>Participantes</span><small>{{k.participantesSub}}</small></div>
+<div class="kpi" style="border-top: 5px solid #932428"><b>{{k.cancel}}</b><span>Canceladas o vencidas</span><small>{{k.cancelSub}}</small></div>
+<div class="kpi" style="border-top: 5px solid #60A8A6"><b>{{k.asist}}</b><span>Asistencia</span><small>{{k.asistSub}}</small></div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap: 22px; margin-bottom: 22px">
+<div class="card" style="min-width: 0">
+<h2 style="font-size: 18px; margin: 0 0 4px">Reservas por día</h2><div style="font-size: 13px; color: #5A6470">Sin canceladas ni vencidas · máximo {{dMax}} en un día</div>
+<div class="chart" role="img" aria-label="{{dAria}}"><div class="gridline" style="top: 22px"><span>máx. {{dMax}}</span></div><sc-for list="{{porDia}}" as="b" hint-placeholder-count="30"><div class="bar" style="height: {{b.h}}"><span class="tip">{{b.tip}}</span></div></sc-for></div>
+<div class="chart-x"><sc-for list="{{porDia}}" as="b" hint-placeholder-count="30"><span>{{b.lbl}}</span></sc-for></div>
+</div>
+<div class="card" style="min-width: 0">
+<h2 style="font-size: 18px; margin: 0 0 4px">Demanda por hora</h2><div style="font-size: 13px; color: #5A6470">Reservas según la hora de inicio · hora pico: {{pico}}</div>
+<div class="chart" role="img" aria-label="{{hAria}}"><div class="gridline" style="top: 22px"><span>máx. {{hMax}}</span></div><sc-for list="{{porHora}}" as="b" hint-placeholder-count="14"><div class="bar" style="height: {{b.h}}"><span class="tip">{{b.tip}}</span></div></sc-for></div>
+<div class="chart-x"><sc-for list="{{porHora}}" as="b" hint-placeholder-count="14"><span>{{b.lbl}}</span></sc-for></div>
+</div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 22px; margin-bottom: 26px">
+<div class="card" style="min-width: 0"><h2 style="font-size: 18px; margin: 0 0 12px">Reservas por cancha</h2><sc-for list="{{porCancha}}" as="m" hint-placeholder-count="3"><div class="hbar"><span>{{m.lbl}}</span><div class="hbar-track"><div class="hbar-fill" style="width: {{m.w}}" title="{{m.tip}}"></div></div><b>{{m.n}}</b></div></sc-for></div>
+<div class="card" style="min-width: 0"><h2 style="font-size: 18px; margin: 0 0 12px">Estado de las reservas</h2><sc-for list="{{porEstado}}" as="m" hint-placeholder-count="5"><div class="hbar"><span class="chip {{m.cls}}" style="justify-self: start">{{m.lbl}}</span><div class="hbar-track"><div class="hbar-fill" style="width: {{m.w}}" title="{{m.tip}}"></div></div><b>{{m.n}}</b></div></sc-for></div>
+<div class="card" style="min-width: 0"><h2 style="font-size: 18px; margin: 0 0 12px">Tipo de usuario y actividad</h2><sc-for list="{{porTipo}}" as="m" hint-placeholder-count="2"><div class="hbar"><span>{{m.lbl}}</span><div class="hbar-track"><div class="hbar-fill" style="width: {{m.w}}" title="{{m.tip}}"></div></div><b>{{m.n}}</b></div></sc-for><div style="height: 10px"></div><sc-for list="{{porAct}}" as="m" hint-placeholder-count="4"><div class="hbar"><span>{{m.lbl}}</span><div class="hbar-track"><div class="hbar-fill" style="width: {{m.w}}; background: #60A8A6" title="{{m.tip}}"></div></div><b>{{m.n}}</b></div></sc-for></div>
+</div>
+
+<section class="card" style="padding: 0; overflow: hidden; margin-bottom: 26px">
+<div style="padding: 18px 22px; border-bottom: 1px solid #E1E4E6; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between">
+<h2 style="font-size: 20px; margin: 0">Reservas ({{nLista}})</h2>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+<div class="seg" role="group" aria-label="Estado"><sc-for list="{{fEst}}" as="o" hint-placeholder-count="4"><button aria-pressed="{{o.on}}" onClick="{{o.pick}}">{{o.lbl}}</button></sc-for></div>
+<div class="field" style="width: 280px"><label for="buscar" style="position: absolute; left: -9999px">Buscar</label><input id="buscar" placeholder="Código, nombre o correo" value="{{q}}" onInput="{{buscar}}"></div>
+</div>
+</div>
+<div class="scroll-x"><div style="min-width: 980px">
+<div class="trow thead" style="grid-template-columns: 1fr 1.1fr 1.3fr 0.9fr 1.7fr 0.9fr 1.2fr 1.3fr 0.9fr"><span>Reserva</span><span>Fecha</span><span>Hora</span><span>Cancha</span><span>Usuario</span><span>Tipo</span><span>Actividad</span><span>Estado</span><span>Valor</span></div>
+<sc-for list="{{lista}}" as="r" hint-placeholder-count="8"><a href="{{r.href}}" class="trow" style="grid-template-columns: 1fr 1.1fr 1.3fr 0.9fr 1.7fr 0.9fr 1.2fr 1.3fr 0.9fr; color: #16222F; text-decoration: none"><span style="font-weight: 700; color: #C2262B">{{r.code}}</span><span>{{r.fecha}}</span><span>{{r.hora}}</span><span>{{r.cancha}}</span><span>{{r.usuario}}</span><span>{{r.tipo}}</span><span>{{r.act}}</span><span><span class="chip {{r.cls}}">{{r.estado}}</span></span><span>{{r.valor}}</span></a></sc-for>
+</div></div>
+<sc-if value="{{listaVacia}}" hint-placeholder-val="{{ false }}"><div style="padding: 24px 22px; color: #4A5560">No hay reservas con estos filtros.</div></sc-if>
+<sc-if value="{{hayMas}}" hint-placeholder-val="{{ false }}"><div style="padding: 16px; text-align: center"><button class="btn-out btn-sm" onClick="{{verMas}}">Ver más ({{restantes}})</button></div></sc-if>
+</section>
+
+<section class="card">
+<h2 style="font-size: 20px; margin: 0 0 6px">Estado de los escenarios</h2>
+<p style="font-size: 14px; color: #4A5560; margin: 0 0 12px">Una cancha fuera de servicio deja de ofrecerse para reservar; el motivo se muestra a los usuarios.</p>
+<sc-for list="{{canchas}}" as="c" hint-placeholder-count="3">
+<div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid #EEF0F2">
+<b style="flex: 1 1 220px">{{c.nombre}}</b><span class="chip {{c.cls}}" style="white-space: normal; max-width: 100%">{{c.txt}}</span><span style="font-size: 13px; color: #5A6470">{{c.prox}}</span>
+<button class="btn-out btn-sm" onClick="{{c.toggle}}">{{c.btn}}</button>
+</div>
+</sc-for>
+</section>
+</sc-if>
+
+<sc-if value="{{modal}}" hint-placeholder-val="{{ false }}">
+<div class="modal-bg" role="dialog" aria-modal="true" aria-labelledby="mt">
+<div class="modal" style="padding: 26px">
+<h2 id="mt" style="font-size: 22px; margin: 0 0 8px">{{m.titulo}}</h2>
+<p style="font-size: 15px; line-height: 23px; color: #3A4652; margin: 0 0 16px">{{m.texto}}</p>
+<div class="field {{m.errCls}}" style="margin-bottom: 18px"><label for="mtxt">{{m.label}}</label><textarea id="mtxt" style="height: 80px" placeholder="{{m.ph}}"></textarea><sc-if value="{{m.err}}" hint-placeholder-val="{{ false }}"><span class="errtxt">✕ {{m.err}}</span></sc-if></div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: flex-end"><button class="btn-out btn-sm" onClick="{{cerrarModal}}">Cancelar</button><button class="btn btn-sm" onClick="{{confirmarModal}}">{{m.boton}}</button></div>
+</div>
+</div>
+</sc-if>
+</main>
+</div>
+<footer class="ftr"><div class="ftr-in">
+<div><b>Bienestar Universitario · Deportes</b><br>{{contacto}}</div>
+<div><a href="ayuda.html">Ayuda y preguntas frecuentes</a><br><a href="reglamento.html">Reglamento de uso</a><br><a href="escenarios.html">Escenarios</a><br><a href="personal.html">Acceso del personal (Tesorería · Bienestar)</a></div>
+<div><b>Vigilada MinEducación</b><br>Universidad de Medellín</div>
+</div></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { per: 'todo', can: 'todas', tip: 'todos', est: 'todas', q: '', limite: 30, modal: null, err: '', toast: '' }; }
+  renderVals() {
+    const U = UdeM, cm = U.comun();
+    if (!U.exigirSesion('bienestar.html')) return cm;
+    const correoBie = U.correoPersonal('bienestar');
+    if (!U.exigirRol('bienestar', 'bienestar.html')) return Object.assign(cm, { denied: true, allowed: false, correoBie, cambiar: () => { U.cerrarSesion(); U.ir('personal.html?next=bienestar.html'); } });
+    const st = this.state, H = U.horas(), DAY = 86400000;
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    const iso = (off) => { const d = new Date(hoy); d.setDate(hoy.getDate() + off); return U.isoDe(d); };
+    const todasR = U.todas();
+    let desde, hasta;
+    if (st.per === '7') { desde = iso(-6); hasta = iso(0); }
+    else if (st.per === '30') { desde = iso(-29); hasta = iso(0); }
+    else if (st.per === 'prox') { desde = iso(0); hasta = iso(U.CFG.diasAnticipacion - 1); }
+    else { const fs = todasR.map((r) => r.fecha).sort(); desde = fs[0] || iso(0); hasta = fs[fs.length - 1] || iso(0); }
+    const inRange = todasR.filter((r) => r.fecha >= desde && r.fecha <= hasta && (st.can === 'todas' || r.cancha === st.can) && (st.tip === 'todos' || r.tipo === st.tip));
+    const ok = inRange.filter((r) => ['cancelada', 'vencida'].indexOf(r.estado) === -1);
+    const users = {}; U.usuarios().forEach((u) => { users[u.id] = u; });
+    // rango de días
+    const diasR = []; for (let t = U.fecha(desde).getTime(); t <= U.fecha(hasta).getTime(); t += DAY) diasR.push(U.isoDe(new Date(t)));
+    const nCanchas = st.can === 'todas' ? U.canchas().length : 1;
+    const cap = diasR.length * H.length * nCanchas;
+    const pct = (a, b) => b ? Math.round(a / b * 100) + '%' : '—';
+    const ingresos = ok.filter((r) => r.tipo === 'externo' && r.estado === 'confirmada' && r.pago && r.pago.verificado).reduce((s, r) => s + r.valor, 0);
+    const porCobrar = ok.filter((r) => ['pendiente_pago', 'en_verificacion'].indexOf(r.estado) !== -1).reduce((s, r) => s + r.valor, 0);
+    const pasadas = ok.filter((r) => r.estado === 'confirmada' && U.pasada(r.fecha, r.hora + 1));
+    const conAsis = pasadas.filter((r) => r.asistencia !== undefined), asis = conAsis.filter((r) => r.asistencia).length;
+    const canc = inRange.length - ok.length;
+    // por día
+    const cDia = {}; ok.forEach((r) => { cDia[r.fecha] = (cDia[r.fecha] || 0) + 1; });
+    const dMax = Math.max(1, ...diasR.map((d) => cDia[d] || 0));
+    const step = Math.max(1, Math.ceil(diasR.length / 8));
+    const porDia = diasR.map((d, i) => ({ h: ((cDia[d] || 0) / dMax * 100) + '%', tip: U.diaCorto(d) + ': ' + (cDia[d] || 0) + ' reservas', lbl: i % step === 0 ? U.diaCorto(d).split(' ')[1] : '' }));
+    // por hora
+    const cH = {}; ok.forEach((r) => { cH[r.hora] = (cH[r.hora] || 0) + 1; });
+    const hMax = Math.max(1, ...H.map((h) => cH[h] || 0));
+    const picoH = H.reduce((b, h) => (cH[h] || 0) > (cH[b] || 0) ? h : b, H[0]);
+    const porHora = H.map((h) => ({ h: ((cH[h] || 0) / hMax * 100) + '%', tip: U.franja(h) + ': ' + (cH[h] || 0), lbl: String(h) }));
+    const hbars = (pairs) => { const mx = Math.max(1, ...pairs.map((p) => p[1])); const tot = pairs.reduce((s, p) => s + p[1], 0); return pairs.map((p) => ({ lbl: p[0], n: p[1], w: (p[1] / mx * 100) + '%', tip: p[0] + ': ' + p[1] + ' (' + pct(p[1], tot) + ')', cls: p[2] || '' })); };
+    const porCancha = hbars(U.canchas().filter((c) => st.can === 'todas' || c.id === st.can).map((c) => [c.corto, ok.filter((r) => r.cancha === c.id).length]));
+    const estOrder = ['confirmada', 'finalizada', 'pendiente_pago', 'en_verificacion', 'cancelada', 'vencida'];
+    const porEstado = hbars(estOrder.map((e) => [U.ESTADOS[e].txt, inRange.filter((r) => U.estadoVisible(r) === e).length, U.ESTADOS[e].cls]));
+    const porTipo = hbars([['Comunidad UdeM', ok.filter((r) => r.tipo === 'interno').length], ['Externos', ok.filter((r) => r.tipo === 'externo').length]]);
+    const acts = {}; ok.forEach((r) => { acts[r.actividad] = (acts[r.actividad] || 0) + 1; });
+    const porAct = hbars(Object.keys(acts).sort((a, b) => acts[b] - acts[a]).map((a) => [a, acts[a]]));
+    // lista
+    const q = st.q.trim().toLowerCase();
+    const estF = { todas: () => true, activas: (r) => ['confirmada', 'pendiente_pago', 'en_verificacion'].indexOf(U.estadoVisible(r)) !== -1, pago: (r) => ['pendiente_pago', 'en_verificacion'].indexOf(r.estado) !== -1, canceladas: (r) => ['cancelada', 'vencida'].indexOf(r.estado) !== -1 };
+    const lista = inRange.filter(estF[st.est]).filter((r) => { if (!q) return true; const u = users[r.userId] || {}; return [r.code, u.nombre, u.email, r.factura ? r.factura.datos.razon : ''].join(' ').toLowerCase().indexOf(q) !== -1; })
+      .sort((a, b) => (b.fecha + String(b.hora).padStart(2, '0')).localeCompare(a.fecha + String(a.hora).padStart(2, '0')));
+    const fila = (r) => { const u = users[r.userId] || {}, e = U.ESTADOS[U.estadoVisible(r)]; return { href: 'reserva.html?c=' + r.code + '&vista=bienestar', code: r.code, fecha: U.diaCorto(r.fecha), hora: U.franja(r.hora), cancha: U.cancha(r.cancha).corto, usuario: r.factura ? r.factura.datos.razon : (u.nombre || '—'), tipo: r.tipo === 'externo' ? 'Externo' : 'Comunidad', act: r.actividad, estado: e.txt, cls: e.cls, valor: r.valor ? U.dinero(r.valor).replace(' COP', '') : 'Sin costo' }; };
+    const seg = (opts, key) => opts.map((o) => ({ lbl: o[1], on: st[key] === o[0], pick: () => this.setState({ [key]: o[0], limite: 30 }) }));
+    const mod = st.modal;
+    const M = mod ? { titulo: 'Poner fuera de servicio · ' + U.cancha(mod.id).nombre, texto: 'Los usuarios no podrán reservarla. Las reservas ya hechas no se cancelan automáticamente: revísalas en la lista.', label: 'Motivo (lo verán los usuarios) *', ph: 'Ej.: mantenimiento de la superficie', boton: 'Poner fuera de servicio' } : {};
+    const hasDemo = U.hayDemo();
+    const fmtD = (s) => U.diaCorto(s) + ' ' + s.slice(0, 4);
+    return Object.assign(cm, {
+      denied: false, allowed: true, correoBie, toast: st.toast, nada: todasR.length === 0, sinDemo: !hasDemo, conDemo: hasDemo,
+      fPer: seg([['todo', 'Todo'], ['7', 'Últimos 7 días'], ['30', 'Últimos 30 días'], ['prox', 'Próximos ' + U.CFG.diasAnticipacion + ' días']], 'per'),
+      fCan: seg([['todas', 'Todas las canchas']].concat(U.canchas().map((c) => [c.id, c.corto])), 'can'),
+      fTip: seg([['todos', 'Todos'], ['interno', 'Comunidad'], ['externo', 'Externos']], 'tip'),
+      fEst: seg([['todas', 'Todas'], ['activas', 'Activas'], ['pago', 'Con pago pendiente'], ['canceladas', 'Canceladas/vencidas']], 'est'),
+      rangoTxt: fmtD(desde) + ' – ' + fmtD(hasta) + ' (' + diasR.length + ' días, por fecha de uso)',
+      viendoTxt: ({ todo: 'todo el periodo', '7': 'últimos 7 días', '30': 'últimos 30 días', prox: 'próximos ' + U.CFG.diasAnticipacion + ' días' }[st.per]) + ' · ' + (st.can === 'todas' ? 'todas las canchas' : U.cancha(st.can).corto) + ' · ' + ({ todos: 'todos los usuarios', interno: 'comunidad', externo: 'externos' }[st.tip]),
+      k: {
+        reservas: ok.length, reservasSub: ok.filter((r) => r.tipo === 'interno').length + ' comunidad · ' + ok.filter((r) => r.tipo === 'externo').length + ' externos',
+        ocupacion: pct(ok.length, cap), ocupacionSub: ok.length + ' de ' + cap + ' franjas disponibles',
+        ingresos: U.dineroCorto(ingresos), ingresosSub: U.dinero(ingresos) + ' · ' + U.dinero(porCobrar).replace(' COP', '') + ' por cobrar o validar',
+        participantes: ok.reduce((s, r) => s + (r.participantes || 0), 0), participantesSub: 'Promedio ' + (ok.length ? Math.round(ok.reduce((s, r) => s + (r.participantes || 0), 0) / ok.length) : 0) + ' por reserva',
+        cancel: canc, cancelSub: pct(canc, inRange.length) + ' de las solicitudes',
+        asist: pct(asis, conAsis.length), asistSub: conAsis.length ? asis + ' de ' + conAsis.length + ' reservas registradas' : 'Sin registros de asistencia'
+      },
+      porDia, dMax, dAria: 'Reservas por día: ' + ok.length + ' en total, máximo ' + dMax + ' en un día',
+      porHora, hMax, pico: ok.length ? U.franja(picoH) : '—', hAria: 'Reservas por hora de inicio; hora pico ' + U.franja(picoH),
+      porCancha, porEstado, porTipo, porAct,
+      nLista: lista.length, lista: lista.slice(0, st.limite).map(fila), listaVacia: lista.length === 0,
+      hayMas: lista.length > st.limite, restantes: lista.length - st.limite, verMas: () => this.setState({ limite: st.limite + 30 }),
+      q: st.q, buscar: (e) => this.setState({ q: e.target.value, limite: 30 }),
+      canchas: U.canchas().map((c) => { const f = U.fueraDeServicio(c.id); const prox = todasR.filter((r) => r.cancha === c.id && r.fecha >= iso(0) && ['confirmada', 'pendiente_pago', 'en_verificacion'].indexOf(r.estado) !== -1).length;
+        return { nombre: c.nombre, cls: f ? 'c-off' : 'c-ok', txt: f ? '⊘ Fuera de servicio · ' + f : '✓ En servicio', prox: prox + ' reservas próximas', btn: f ? 'Habilitar' : 'Poner fuera de servicio',
+          toggle: () => { if (f) { U.ponerFuera(c.id, null); this.setState({ toast: c.nombre + ' quedó habilitada para reservas.' }); } else this.setState({ modal: { id: c.id }, err: '' }); } }; }),
+      modal: !!mod, m: Object.assign({ err: st.err, errCls: st.err ? 'err' : '' }, M),
+      cerrarModal: () => this.setState({ modal: null, err: '' }),
+      confirmarModal: () => { const t = ((document.getElementById('mtxt') || {}).value || '').trim(); if (!t) { this.setState({ err: 'Escribe el motivo.' }); return; } U.ponerFuera(mod.id, t); this.setState({ modal: null, toast: U.cancha(mod.id).nombre + ' quedó fuera de servicio.' }); },
+      cargarDemo: () => { U.generarDemo(); this.setState({ toast: 'Se cargaron reservas de ejemplo (marcadas como demo) de los últimos 30 días y los próximos ' + U.CFG.diasAnticipacion + '.' }); },
+      quitarDemo: () => { if (confirm('¿Quitar las reservas y usuarios de ejemplo? Las reservas reales no se tocan.')) { U.borrarDemo(); this.setState({ toast: 'Datos de ejemplo eliminados.' }); } },
+      exportar: () => U.csv('reservas_' + desde + '_' + hasta + '.csv', [['Reserva', 'Fecha', 'Hora', 'Cancha', 'Usuario', 'Correo', 'Tipo', 'Actividad', 'Participantes', 'Estado', 'Valor', 'Factura', 'Medio de pago', 'Asistencia', 'Creada']]
+        .concat(lista.map((r) => { const u = users[r.userId] || {}; return [r.code, r.fecha, U.franja(r.hora), U.cancha(r.cancha).nombre, r.factura ? r.factura.datos.razon : u.nombre, u.email, r.tipo === 'externo' ? 'Externo' : 'Comunidad UdeM', r.actividad, r.participantes, U.ESTADOS[U.estadoVisible(r)].txt.replace(/^[✓◷] /, ''), r.valor, r.factura ? r.factura.numero : '', r.pago ? r.pago.metodo : '', r.asistencia === undefined ? '' : (r.asistencia ? 'Asistió' : 'No asistió'), r.creada]; })))
+    });
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ayuda · Reservas deportivas UdeM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="icon" href="assets/logo-udem.png">
+<script>window.UDEM_PORTAL = 'usuario';</script>
+<script src="assets/config.js"></script>
+<script src="assets/db.js"></script>
+<script src="assets/dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+<div class="demo">Versión de demostración · los datos se guardan solo en este navegador · los pagos son simulados</div>
+<header class="hdr"><div class="hdr-in">
+<sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a class="brand" href="index.html"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Reservas <span>Deportivas</span></b></a></sc-if><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><a class="brand" href="{{panelHref}}"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Portal del <span>personal</span></b></a></sc-if>
+<nav class="nav" aria-label="Principal"><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><sc-if value="{{showTes}}" hint-placeholder-val="{{ false }}"><a href="tesoreria.html" class="">Tesorería</a></sc-if><sc-if value="{{showBie}}" hint-placeholder-val="{{ false }}"><a href="bienestar.html" class="">Bienestar</a></sc-if><a href="personal.html" class="">Acceso del personal</a></sc-if><sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a href="reservar.html" class="">Reservar</a><a href="mis-reservas.html" class="">Mis reservas<sc-if value="{{hayNoti}}" hint-placeholder-val="{{ false }}"><span class="noti-dot" aria-label="{{nNoti}} avisos nuevos">{{nNoti}}</span></sc-if></a><a href="escenarios.html" class="">Escenarios</a><a href="ayuda.html" class="on">Ayuda</a></sc-if></nav>
+<sc-if value="{{guest}}" hint-placeholder-val="{{ true }}"><div class="me"><a class="btn-out btn-sm" href="registro.html">Crear cuenta</a><a class="btn btn-sm" href="ingresar.html">Ingresar</a></div></sc-if>
+<sc-if value="{{u.logged}}" hint-placeholder-val="{{ false }}"><div class="me"><a class="chipuser" href="{{perfilHref}}" title="Mi cuenta"><i style="background: {{u.color}}">{{u.ini}}</i>{{u.nombre}} · {{u.rol}}</a><button class="linkbtn" onClick="{{salir}}" style="font-size: 14px">Salir</button></div></sc-if>
+</div></header>
+<div style="flex: 1 0 auto">
+<main class="wrap" style="max-width: 980px">
+<div class="eyebrow" style="color: #C2262B; margin-bottom: 8px">Ayuda</div>
+<h1 class="h1">Preguntas frecuentes</h1>
+<p class="lead">Respuestas basadas en el proceso de reservas. Lo que está entre [corchetes] está pendiente de definir con Deportes o Tesorería.</p>
+
+<div style="display: flex; flex-direction: column; gap: 12px">
+<sc-for list="{{faqs}}" as="q" hint-placeholder-count="7">
+<div class="card" style="padding: 0; overflow: hidden">
+<button onClick="{{q.toggle}}" aria-expanded="{{q.open}}" style="width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 18px 22px; background: none; border: 0; cursor: pointer; text-align: left; font-size: 17px; font-weight: 700; color: #16222F; min-height: 56px">
+<span>{{q.q}}</span><span style="font-size: 24px; color: #C2262B; line-height: 1">{{q.sign}}</span>
+</button>
+<sc-if value="{{q.open}}" hint-placeholder-val="{{ false }}"><div style="padding: 0 22px 20px; font-size: 15px; line-height: 24px; color: #3A4652">{{q.a}}</div></sc-if>
+</div>
+</sc-for>
+</div>
+
+<div class="card" style="margin-top: 28px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; background: #2B445F; color: #FFFFFF; border: 0">
+<div style="flex: 1 1 320px"><h2 class="h2" style="color: #FFFFFF">¿No encontraste tu respuesta?</h2><div style="font-size: 15px; line-height: 24px">Coordinación de Deportes · Bienestar Universitario<br>{{contacto}}</div></div>
+<a class="btn" href="reservar.html" style="background: #FFFFFF; color: #932428 !important">Ir a reservar</a>
+</div>
+</main>
+</div>
+<footer class="ftr"><div class="ftr-in">
+<div><b>Bienestar Universitario · Deportes</b><br>{{contacto}}</div>
+<div><a href="ayuda.html">Ayuda y preguntas frecuentes</a><br><a href="reglamento.html">Reglamento de uso</a><br><a href="escenarios.html">Escenarios</a><br><a href="personal.html">Acceso del personal (Tesorería · Bienestar)</a></div>
+<div><b>Vigilada MinEducación</b><br>Universidad de Medellín</div>
+</div></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { open: 0 }; }
+  renderVals() {
+    const C = UdeM.CFG, din = UdeM.dinero(C.tarifaExternosHora);
+    const data = [
+      ['¿Quién puede reservar?', 'Cualquier persona con una cuenta. Si te registras con un correo @udemedellin.edu.co o @soyudemedellin.edu.co quedas como comunidad UdeM; con cualquier otro correo quedas como usuario externo.'],
+      ['¿Cuánto cuesta?', 'Para la comunidad UdeM no tiene costo. Para usuarios externos el valor es ' + din + ' por hora (valor de ejemplo, a confirmar con Tesorería).'],
+      ['Soy externo, ¿qué necesito?', 'Al crear la cuenta: tipo de persona, NIT o cédula, nombre o razón social y teléfono. En tu primera reserva cargas el RUT en PDF; queda guardado en tu perfil.'],
+      ['¿Cuándo queda confirmada mi reserva?', 'Comunidad UdeM: al confirmarla. Externos: al aprobarse el pago en línea o cuando Tesorería verifica el comprobante. Sigues cada paso en la página de la reserva.'],
+      ['¿Cómo pago?', 'Desde la reserva: “Pagar en línea” (pasarela simulada en esta versión) o “Subir comprobante” si pagaste por transferencia o consignación. Tienes ' + C.horasParaPagar + ' horas; si no, el horario se libera.'],
+      ['¿Puedo cancelar?', 'Sí, desde la página de la reserva mientras no haya pasado. Si ya pagaste, el reembolso sigue la política de Tesorería [por definir].'],
+      ['¿Hasta cuándo puedo reservar?', 'Hasta ' + C.diasAnticipacion + ' días adelante, en franjas de una hora entre ' + UdeM.hora(C.horaInicio) + ' y ' + UdeM.hora(C.horaFin + 1) + ' (por confirmar con Deportes).'],
+      ['¿Qué significan los colores de las franjas?', 'Verde con ✓: libre. Gris rayado: reservada. Amarillo punteado: apartada por otra persona mientras paga. Azul claro con ★: tu reserva. Azul oscuro: tu selección. Cada estado también tiene texto.'],
+      ['¿Dónde quedan guardados mis datos?', 'En esta versión de demostración, solo en este navegador: si entras desde otro computador o celular no verás tu cuenta. Para uso real se conecta una base de datos de la universidad.']
+    ];
+    return Object.assign(UdeM.comun(), {
+      faqs: data.map((d, i) => ({ q: d[0], a: d[1], open: this.state.open === i, sign: this.state.open === i ? '−' : '+', toggle: () => this.setState({ open: this.state.open === i ? -1 : i }) }))
+    });
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escenarios · Reservas deportivas UdeM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&amp;family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<link rel="icon" href="assets/logo-udem.png">
+<script>window.UDEM_PORTAL = 'usuario';</script>
+<script src="assets/config.js"></script>
+<script src="assets/db.js"></script>
+<script src="assets/dc-runtime.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="min-height: 100vh; display: flex; flex-direction: column">
+<div class="demo">Versión de demostración · los datos se guardan solo en este navegador · los pagos son simulados</div>
+<header class="hdr"><div class="hdr-in">
+<sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a class="brand" href="index.html"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Reservas <span>Deportivas</span></b></a></sc-if><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><a class="brand" href="{{panelHref}}"><img src="assets/logo-udem.png" alt="Universidad de Medellín"><i class="div"></i><b>Portal del <span>personal</span></b></a></sc-if>
+<nav class="nav" aria-label="Principal"><sc-if value="{{staff}}" hint-placeholder-val="{{ false }}"><sc-if value="{{showTes}}" hint-placeholder-val="{{ false }}"><a href="tesoreria.html" class="">Tesorería</a></sc-if><sc-if value="{{showBie}}" hint-placeholder-val="{{ false }}"><a href="bienestar.html" class="">Bienestar</a></sc-if><a href="personal.html" class="">Acceso del personal</a></sc-if><sc-if value="{{noStaff}}" hint-placeholder-val="{{ true }}"><a href="reservar.html" class="">Reservar</a><a href="mis-reservas.html" class="">Mis reservas<sc-if value="{{hayNoti}}" hint-placeholder-val="{{ false }}"><span class="noti-dot" aria-label="{{nNoti}} avisos nuevos">{{nNoti}}</span></sc-if></a><a href="escenarios.html" class="on">Escenarios</a><a href="ayuda.html" class="">Ayuda</a></sc-if></nav>
+<sc-if value="{{guest}}" hint-placeholder-val="{{ true }}"><div class="me"><a class="btn-out btn-sm" href="registro.html">Crear cuenta</a><a class="btn btn-sm" href="ingresar.html">Ingresar</a></div></sc-if>
+<sc-if value="{{u.logged}}" hint-placeholder-val="{{ false }}"><div class="me"><a class="chipuser" href="{{perfilHref}}" title="Mi cuenta"><i style="background: {{u.color}}">{{u.ini}}</i>{{u.nombre}} · {{u.rol}}</a><button class="linkbtn" onClick="{{salir}}" style="font-size: 14px">Salir</button></div></sc-if>
+</div></header>
+<div style="flex: 1 0 auto">
+<main class="wrap">
+<div class="eyebrow" style="color: #C2262B; margin-bottom: 8px">Escenarios deportivos</div>
+<h1 class="h1">Conoce las canchas</h1>
+<p class="lead">Nombres, deportes y características de ejemplo: reemplazar por el inventario real de Deportes.</p>
+
+<div class="stickybar" role="region" aria-label="Filtro de escenarios">
+<div class="sb-row"><span class="sb-lbl">Deporte</span><div class="sb-scroll" role="group" aria-label="Filtrar por deporte">
+<sc-for list="{{filters}}" as="f" hint-placeholder-count="5"><button class="pill" onClick="{{f.pick}}" aria-pressed="{{f.on}}">{{f.label}}</button></sc-for>
+</div></div>
+<div class="sb-now"><div class="viendo">Viendo: <b>{{viendo}}</b></div></div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 22px">
+<sc-for list="{{courts}}" as="c" hint-placeholder-count="3">
+<article id="{{c.id}}" class="card" style="padding: 0; overflow: hidden; display: flex; flex-wrap: wrap">
+<div style="flex: 1 1 340px; min-height: 220px; background: {{c.color}}; position: relative; overflow: hidden">
+<svg aria-hidden="true" width="100%" height="100%" viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" style="position: absolute; inset: 0" fill="none" stroke="{{c.linea}}" stroke-width="3"><rect x="30" y="24" width="340" height="192"></rect><line x1="200" y1="24" x2="200" y2="216"></line><circle cx="200" cy="120" r="38"></circle><path d="M30 76 h56 v88 h-56"></path><path d="M370 76 h-56 v88 h56"></path></svg>
+<span class="chip {{c.chipClass}}" style="position: absolute; left: 16px; top: 16px">{{c.chip}}</span>
+</div>
+<div style="flex: 2 1 420px; padding: 26px 28px; display: flex; flex-direction: column; gap: 14px">
+<h2 class="h2" style="margin: 0">{{c.nombre}}</h2>
+<dl class="kv">
+<dt>Deportes</dt><dd>{{c.deportes}}</dd>
+<dt>Ubicación</dt><dd>{{c.ubicacion}}</dd>
+<dt>Aforo</dt><dd>{{c.aforo}}</dd>
+<dt>Horario</dt><dd>{{horario}}</dd>
+<dt>Hoy</dt><dd>{{c.today}}</dd>
+</dl>
+<div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px">
+<sc-if value="{{c.ok}}" hint-placeholder-val="{{ true }}"><a class="btn" href="{{c.href}}">Ver horarios y reservar</a></sc-if>
+<sc-if value="{{c.out}}" hint-placeholder-val="{{ false }}"><a class="btn-out" href="reservar.html">Ver canchas disponibles</a></sc-if>
+<a class="btn-out" href="reglamento.html" style="border-color: transparent">Condiciones de uso</a>
+</div>
+</div>
+</article>
+</sc-for>
+</div>
+</main>
+</div>
+<footer class="ftr"><div class="ftr-in">
+<div><b>Bienestar Universitario · Deportes</b><br>{{contacto}}</div>
+<div><a href="ayuda.html">Ayuda y preguntas frecuentes</a><br><a href="reglamento.html">Reglamento de uso</a><br><a href="escenarios.html">Escenarios</a><br><a href="personal.html">Acceso del personal (Tesorería · Bienestar)</a></div>
+<div><b>Vigilada MinEducación</b><br>Universidad de Medellín</div>
+</div></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { f: 'Todos' }; }
+  renderVals() {
+    const U = UdeM, st = this.state, hoy = U.hoyIso();
+    const opts = ['Todos', 'Microfútbol', 'Baloncesto', 'Fútbol', 'Voleibol'];
+    const filters = opts.map((o) => ({ label: o, on: st.f === o, pick: () => this.setState({ f: o }),
+      style: 'min-height: 44px; padding: 0 16px; border-radius: 999px; cursor: pointer; font-weight: 700; font-size: 14px; ' + (st.f === o ? 'background: #2B445F; color: #FFFFFF; border: 0' : 'background: #FFFFFF; color: #16222F; border: 1.5px solid #D5D9DC') }));
+    const courts = U.canchas().filter((c) => st.f === 'Todos' || c.deportes.indexOf(st.f) !== -1).map((c) => {
+      const fuera = U.fueraDeServicio(c.id);
+      return Object.assign({}, c, { ok: !fuera, out: !!fuera, chip: fuera ? '⊘ Fuera de servicio' : '✓ En servicio', chipClass: fuera ? 'c-off' : 'c-ok',
+        today: fuera ? 'Fuera de servicio: ' + fuera : U.libres(c.id, hoy) + ' franjas libres', href: 'reservar.html?cancha=' + c.id });
+    });
+    return Object.assign(U.comun(), { filters, courts, viendo: courts.length + (courts.length === 1 ? ' cancha' : ' canchas') + (st.f === 'Todos' ? ' · todos los deportes' : ' · ' + st.f), horario: U.hora(U.CFG.horaInicio) + ' a ' + U.hora(U.CFG.horaFin + 1) + ' [por confirmar]' });
+  }
+}
+</script>
+</body>
+</html>
